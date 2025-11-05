@@ -55,12 +55,16 @@ const clear = function () {
   console.clear();
 };
 
+const displayError = function (message) {
+  console.log(red(message));
+}
+
 let pwdRegistery = [0, 0, 0];
 
 const rootFileSystem = [["root/", [
   ["js/", [["assignments/", [["functions/", []], ["recursion/", []]]], [
     "hello.js",
-    [],
+    ["hello world, this is the data written in hello.js"],
   ]]],
   ["downloads/", []],
   ["documents/", []],
@@ -131,11 +135,11 @@ const cd = function (args) {
   if (folderName === ".") return;
   const folderIndex = findFolderIndex(folderName);
   if (!isFolder(folderIndex)) {
-    console.log(red("jsh: cd: not a directory: " + folderName));
+    displayError("jsh: cd: not a directory: " + folderName);
     return;
   }
   if (folderIndex === -1) {
-    console.log(red("jsh : cd: no such file or directory: " + folderName));
+    displayError("jsh : cd: no such file or directory: " + folderName);
     return;
   }
   pwdRegistery.push(folderIndex);
@@ -184,7 +188,23 @@ const touch = function (args) {
   }
 }
 
-const functions = [cd, ls, clear, clear, mkdir, rm, pwd, echo, touch];
+const cat = function (args) {
+  const fileName = args[0];
+  const fileIndex = findFolderIndex(fileName);
+  if (isFolder(fileIndex)) {
+    displayError("jsh: cat: "+ fileName +" : Is a directory");
+    return;
+  }
+  if (fileIndex === -1) {
+    displayError("jsh: cat: "+ fileName +" : No such file or directory");
+    return;
+  }
+  const currentDirectory = getCurrentFileSystem();
+  const contents = currentDirectory[fileIndex][1].join("\n");
+  console.log(contents);
+}
+
+const functions = [cd, ls, clear, clear, mkdir, rm, pwd, echo, touch, cat];
 const functionsRegistery = [
   "cd",
   "ls",
@@ -194,7 +214,8 @@ const functionsRegistery = [
   "rm",
   "pwd",
   "echo",
-  "touch"
+  "touch",
+  "cat"
 ];
 
 const userInput = function (path) {
@@ -208,7 +229,7 @@ const getCommandReference = function (commandName) {
       return functions[index];
     }
   }
-  console.log(red("jsh: command not found: " + commandName));
+  displayError("jsh: command not found: " + commandName);
   return function () {};
 };
 
