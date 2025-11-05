@@ -28,8 +28,16 @@ const findIndex = function (array, value, method) {
 };
 
 // colors
+const red = function (text) {
+  return "\x1B[31m" + text + "\x1B[0m";
+};
+
 const green = function (text) {
   return "\x1B[32m" + text + "\x1B[0m";
+};
+
+const yellow = function (text) {
+  return "\x1B[33m" + text + "\x1B[0m";
 };
 
 const blue = function (text) {
@@ -111,7 +119,7 @@ const cd = function (args) {
   if (folderName === ".") return;
   const folderIndex = findFolderIndex(folderName);
   if (folderIndex === -1) {
-    console.log("cd: no such file or directory: " + folderName);
+    console.log(red("jsh : cd: no such file or directory: " + folderName));
     return;
   }
   pwdRegistery.push(folderIndex);
@@ -143,11 +151,15 @@ const rm = function (args) {
   }
 }
 
-const functions = [cd, ls, clear, clear, mkdir, rm];
-const functionsRegistery = ["cd", "ls", "clear", "cls", "mkdir", "rm"];
+const pwd = function() {
+  console.log(yellow(generatePwd()));
+}
+
+const functions = [cd, ls, clear, clear, mkdir, rm, pwd];
+const functionsRegistery = ["cd", "ls", "clear", "cls", "mkdir", "rm", "pwd"];
 
 const userInput = function (path) {
-  const message = green(" " + path + " ~");
+  const message = green(path + " ~");
   return prompt(message).trim().split(" ");
 };
 
@@ -157,7 +169,7 @@ const getCommandReference = function (commandName) {
       return functions[index];
     }
   }
-  console.log("jsh: command not found: " + commandName);
+  console.log(red("jsh: command not found: " + commandName));
   return function () {};
 };
 
