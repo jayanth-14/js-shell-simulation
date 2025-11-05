@@ -155,8 +155,12 @@ const pwd = function() {
   console.log(yellow(generatePwd()));
 }
 
-const functions = [cd, ls, clear, clear, mkdir, rm, pwd];
-const functionsRegistery = ["cd", "ls", "clear", "cls", "mkdir", "rm", "pwd"];
+const echo = function (args) {
+  console.log(args.join(" "));
+}
+
+const functions = [cd, ls, clear, clear, mkdir, rm, pwd, echo];
+const functionsRegistery = ["cd", "ls", "clear", "cls", "mkdir", "rm", "pwd", "echo"];
 
 const userInput = function (path) {
   const message = green(path + " ~");
