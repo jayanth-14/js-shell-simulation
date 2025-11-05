@@ -59,7 +59,8 @@ const displayError = function (message) {
   console.log(red(message));
 };
 
-let pwdRegistery = [0, 0, 0];
+// shell logic starts here
+let pwdRegistry = [0, 0, 0]; // the current location pointer
 
 const rootFileSystem = [["root/", [
   ["js/", [["assignments/", [["functions/", []], ["recursion/", []]]], [
@@ -72,11 +73,10 @@ const rootFileSystem = [["root/", [
 ]]];
 
 const generatePwd = function () {
-  const location = pwdRegistery;
   const folders = [];
   let currentFileSystem = rootFileSystem;
-  for (let index = 0; index < location.length; index++) {
-    const currentFolderIndex = location[index];
+  for (let index = 0; index < pwdRegistry.length; index++) {
+    const currentFolderIndex = pwdRegistry[index];
     const currentDirectory = currentFileSystem[currentFolderIndex];
     folders.push(currentDirectory[0]);
     currentFileSystem = currentDirectory[1];
@@ -86,8 +86,8 @@ const generatePwd = function () {
 
 const getCurrentFileSystem = function () {
   let currentFileSystem = rootFileSystem;
-  for (let index = 0; index < pwdRegistery.length; index++) {
-    const location = pwdRegistery[index];
+  for (let index = 0; index < pwdRegistry.length; index++) {
+    const location = pwdRegistry[index];
     currentFileSystem = currentFileSystem[location][1];
   }
   return currentFileSystem;
@@ -120,17 +120,21 @@ const findFolderIndex = function (folderName) {
 const isFolder = function (folderIndex) {
   const currentDirectory = getCurrentFileSystem();
   const folderName = currentDirectory[folderIndex];
-  return folderName[0].endsWith("/");
+  return folderIndex !== -1 && folderName[0].endsWith("/");
+};
+
+const moveFileLocationBackward = function () {
+  if (pwdRegistry.length === 1) {
+    displayError("Couldn't go backward from root");
+    return;
+  }
+  return pwdRegistry.pop();
 };
 
 const cd = function (args) {
   const folderName = args[0];
   if (folderName === "..") {
-    if (pwdRegistery.length === 1) {
-      console.log("Couldn't go backward from root");
-      return;
-    }
-    return pwdRegistery.pop();
+    return moveFileLocationBackward();
   }
   if (folderName === ".") return;
   const folderIndex = findFolderIndex(folderName);
@@ -142,7 +146,7 @@ const cd = function (args) {
     displayError("jsh : cd: no such file or directory: " + folderName);
     return;
   }
-  pwdRegistery.push(folderIndex);
+  pwdRegistry.push(folderIndex);
 };
 
 const ls = function () {
@@ -191,45 +195,58 @@ const touch = function (args) {
 const textEditor = function () {
   const text = [];
   console.log(
-    yellow(`Enter your text below. Type ${bold(":wq")} to save and exit.`),
+    yellow(`Enter your text below. Type ${bold(":wq") + yellow("to save and exit.")}`),
   );
   while (true) {
     const line = prompt("");
     if (line.endsWith(":wq")) {
-      text.push(line.slice(0,line.length - 3));
+      text.push(line.slice(0, line.length - 3));
       return text.join("\n");
     }
     text.push(line);
   }
 };
 
+const write = function (contents, fileIndex) {
+  const currentDirectory = getCurrentFileSystem();
+  currentDirectory[fileIndex][1].splice(0);
+  currentDirectory[fileIndex][1][0] = contents;
+};
+
+const append = function (contents, fileIndex) {
+  const currentDirectory = getCurrentFileSystem();
+  currentDirectory[fileIndex][1].push(contents);
+};
+
+const writeToFile = function (fileName, isAppendMode = false) {
+  const contents = textEditor();
+  let fileIndex = findFolderIndex(fileName);
+  if (fileIndex === -1) {
+    touch([fileName]);
+    fileIndex = findFolderIndex(fileName);
+  }
+
+  const mode = isAppendMode ? append : write;
+  mode(contents, fileIndex);
+  return;
+};
+
 const cat = function (args) {
   const currentDirectory = getCurrentFileSystem();
   let fileName = args[0];
-  if (fileName === ">") {
-    fileName = args[1];
-    const contents = textEditor();
-    const fileIndex = findFolderIndex(fileName);
-    currentDirectory[fileIndex][1].splice(0);
-    currentDirectory[fileIndex][1][0] = contents;
-    return;
+
+  if (fileName.includes(">")) {
+    return writeToFile(args[1], fileName === ">>");
   }
-  if (fileName === ">>") {
-    fileName = args[1];
-    const contents = textEditor();
-    const fileIndex = findFolderIndex(fileName);
-    currentDirectory[fileIndex][1].push(contents);
-    return;
-  }
+
   const fileIndex = findFolderIndex(fileName);
   if (isFolder(fileIndex)) {
-    displayError("jsh: cat: " + fileName + " : Is a directory");
-    return;
+    const errorMessage = fileIndex === -1
+      ? "jsh: cat: " + fileName + " : No such file or directory"
+      : "jsh: cat: " + fileName + " : Is a directory";
+    return displayError(errorMessage);
   }
-  if (fileIndex === -1) {
-    displayError("jsh: cat: " + fileName + " : No such file or directory");
-    return;
-  }
+
   const contents = currentDirectory[fileIndex][1].join("\n");
   console.log(contents);
 };
@@ -266,11 +283,23 @@ const getCommandReference = function (commandName) {
 const executeCommand = function (commandInfo) {
   const commandName = commandInfo[0];
   const command = getCommandReference(commandName);
-  command(commandInfo.splice(1));
+  command(commandInfo.slice(1));
+};
+
+const printBanner = function () {
+  console.log(green(bold(`
+  ───────────────────────────────────────────
+   ⚡ Welcome to JSH (Jayanth Shell)
+  ───────────────────────────────────────────
+  `)));
+  console.log(cyan(`Version: 1.0.0 | Mode: Noob Mode 🥸`));
+  console.log(yellow(`Type 'help' to view available commands.`));
+  console.log(" ");
 };
 
 const start = function () {
   clear();
+  printBanner();
   while (true) {
     const pwd = generatePwd();
     const commandInfo = userInput(pwd);
