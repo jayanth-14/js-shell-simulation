@@ -25,9 +25,25 @@ const findIndex = function (array, value, method) {
     }
   }
   return -1;
-}
+};
 
-let userName = "root";
+// colors
+const green = function (text) {
+  return "\x1B[32m" + text + "\x1B[0m";
+};
+
+const blue = function (text) {
+  return "\x1B[34m" + text + "\x1B[0m";
+};
+
+const cyan = function (text) {
+  return "\x1B[36m" + text + "\x1B[0m";
+};
+
+const clear = function () {
+  console.clear();
+};
+
 let pwdRegistery = [0, 0, 0];
 
 const rootFileSystem = [["root", [
@@ -60,7 +76,9 @@ const getCurrentFileSystem = function () {
 };
 
 const stripContents = function (content) {
-  return "./" + (Array.isArray(content) ? content[0] + "/" : content);
+  return (Array.isArray(content)
+    ? blue("./" + content[0] + "/")
+    : cyan("./" + content));
 };
 
 const getFileSystemContents = function () {
@@ -71,11 +89,18 @@ const getFileSystemContents = function () {
 
 const findFolderIndex = function (folderName) {
   const currentDirectory = getCurrentFileSystem();
-  const mathed = findIndex(currentDirectory, folderName, function(value, folder) {return Array.isArray(value) ? value[0] === folder : value === folder});
+  const mathed = findIndex(
+    currentDirectory,
+    folderName,
+    function (value, folder) {
+      return Array.isArray(value) ? value[0] === folder : value === folder;
+    },
+  );
   return mathed;
 };
 
-const cd = function (folderName) {
+const cd = function (args) {
+  const folderName = args[0];
   if (folderName === "..") {
     if (pwdRegistery.length === 1) {
       console.log("Couldn't go backward from root");
@@ -83,7 +108,7 @@ const cd = function (folderName) {
     }
     return pwdRegistery.pop();
   }
-  if (folderName === ".") {return}
+  if (folderName === ".") return;
   const folderIndex = findFolderIndex(folderName);
   if (folderIndex === -1) {
     console.log("cd: no such file or directory: " + folderName);
@@ -97,12 +122,24 @@ const ls = function () {
   console.log(contents);
 };
 
-const functions = [cd, ls];
-const functionsRegistery = ["cd", "ls"];
+const createFolder = function(folderName) {
+  return [folderName, []];
+}
 
-const userInput = function (userName, path) {
-  const leading = userName + "@" + path + ">";
-  return prompt(leading).trim().split(" ");
+const mkdir = function (args) {
+  const currentDirectory = getCurrentFileSystem();
+  for (let index = 0; index < args.length; index++) {
+    const element = args[index];
+    currentDirectory.push(createFolder(element));
+  }
+}
+
+const functions = [cd, ls, clear, clear, mkdir];
+const functionsRegistery = ["cd", "ls", "clear", "cls", "mkdir"];
+
+const userInput = function (path) {
+  const message = green(" " + path + " ~");
+  return prompt(message).trim().split(" ");
 };
 
 const getCommandReference = function (commandName) {
@@ -112,19 +149,20 @@ const getCommandReference = function (commandName) {
     }
   }
   console.log("jsh: command not found: " + commandName);
-  return function(){}
+  return function () {};
 };
 
 const executeCommand = function (commandInfo) {
   const commandName = commandInfo[0];
   const command = getCommandReference(commandName);
-  command(commandInfo[1]);
+  command(commandInfo.splice(1));
 };
 
 const start = function () {
+  clear();
   while (true) {
     const pwd = generatePwd();
-    const commandInfo = userInput(userName, pwd);
+    const commandInfo = userInput(pwd);
     executeCommand(commandInfo);
   }
 };
