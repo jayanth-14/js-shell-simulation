@@ -154,8 +154,8 @@ const create = function (folderName, isFolder) {
 const mkdir = function (args) {
   const currentDirectory = getCurrentFileSystem();
   for (let index = 0; index < args.length; index++) {
-    const element = args[index];
-    currentDirectory.push(createFolder(element, true));
+    const folderName = args[index];
+    currentDirectory.push(createFolder(folderName, true));
   }
 };
 
@@ -176,7 +176,15 @@ const echo = function (args) {
   console.log(args.join(" "));
 };
 
-const functions = [cd, ls, clear, clear, mkdir, rm, pwd, echo];
+const touch = function (args) {
+  const currentDirectory = getCurrentFileSystem();
+  for (let index = 0; index < args.length; index++) {
+    const fileName = args[index];
+    currentDirectory.push(create(fileName, false));
+  }
+}
+
+const functions = [cd, ls, clear, clear, mkdir, rm, pwd, echo, touch];
 const functionsRegistery = [
   "cd",
   "ls",
@@ -186,6 +194,7 @@ const functionsRegistery = [
   "rm",
   "pwd",
   "echo",
+  "touch"
 ];
 
 const userInput = function (path) {
