@@ -57,11 +57,14 @@ const clear = function () {
 
 let pwdRegistery = [0, 0, 0];
 
-const rootFileSystem = [["root", [
-  ["js", [["assignments", [["functions", []], ["recursion", []]]], "hello.js"]],
-  ["downloads", []],
-  ["documents", []],
-  ["pictures", []],
+const rootFileSystem = [["root/", [
+  ["js/", [["assignments/", [["functions/", []], ["recursion/", []]]], [
+    "hello.js",
+    [],
+  ]]],
+  ["downloads/", []],
+  ["documents/", []],
+  ["pictures/", []],
 ]]];
 
 const generatePwd = function () {
@@ -74,7 +77,7 @@ const generatePwd = function () {
     folders.push(currentDirectory[0]);
     currentFileSystem = currentDirectory[1];
   }
-  return folders.join("/");
+  return folders.join("");
 };
 
 const getCurrentFileSystem = function () {
@@ -87,9 +90,9 @@ const getCurrentFileSystem = function () {
 };
 
 const stripContents = function (content) {
-  return (Array.isArray(content)
-    ? blue("./" + content[0] + "/")
-    : cyan("./" + content));
+  return (content[0].endsWith("/")
+    ? blue("./" + content[0])
+    : cyan("./" + content[0]));
 };
 
 const getFileSystemContents = function () {
@@ -104,10 +107,16 @@ const findFolderIndex = function (folderName) {
     currentDirectory,
     folderName,
     function (value, folder) {
-      return Array.isArray(value) ? value[0] === folder : value === folder;
+      return value[0] === folder || value[0] === folder + "/";
     },
   );
   return mathed;
+};
+
+const isFolder = function (folderIndex) {
+  const currentDirectory = getCurrentFileSystem();
+  const folderName = currentDirectory[folderIndex];
+  return folderName[0].endsWith("/");
 };
 
 const cd = function (args) {
@@ -121,6 +130,10 @@ const cd = function (args) {
   }
   if (folderName === ".") return;
   const folderIndex = findFolderIndex(folderName);
+  if (!isFolder(folderIndex)) {
+    console.log(red("jsh: cd: not a directory: " + folderName));
+    return;
+  }
   if (folderIndex === -1) {
     console.log(red("jsh : cd: no such file or directory: " + folderName));
     return;
@@ -133,17 +146,18 @@ const ls = function () {
   console.log(contents);
 };
 
-const createFolder = function(folderName) {
-  return [folderName, []];
-}
+const create = function (folderName, isFolder) {
+  const name = folderName + (isFolder ? "/" : "");
+  return [name, []];
+};
 
 const mkdir = function (args) {
   const currentDirectory = getCurrentFileSystem();
   for (let index = 0; index < args.length; index++) {
     const element = args[index];
-    currentDirectory.push(createFolder(element));
+    currentDirectory.push(createFolder(element, true));
   }
-}
+};
 
 const rm = function (args) {
   for (let index = 0; index < args.length; index++) {
@@ -152,18 +166,27 @@ const rm = function (args) {
     const elementIndex = findFolderIndex(element);
     currentDirectory.splice(elementIndex, 1);
   }
-}
+};
 
-const pwd = function() {
+const pwd = function () {
   console.log(yellow(generatePwd()));
-}
+};
 
 const echo = function (args) {
   console.log(args.join(" "));
-}
+};
 
 const functions = [cd, ls, clear, clear, mkdir, rm, pwd, echo];
-const functionsRegistery = ["cd", "ls", "clear", "cls", "mkdir", "rm", "pwd", "echo"];
+const functionsRegistery = [
+  "cd",
+  "ls",
+  "clear",
+  "cls",
+  "mkdir",
+  "rm",
+  "pwd",
+  "echo",
+];
 
 const userInput = function (path) {
   const message = bold(green(path + " ~"));
