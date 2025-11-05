@@ -8,10 +8,10 @@ const map = function (array, method) {
   return modifiedArray;
 };
 
-const filter = function (array, method) {
+const filter = function (method, array, value) {
   const modifiedArray = [];
   for (let index = 0; index < array.length; index++) {
-    if (method(array[index])) {
+    if (method(array[index], index, value)) {
       modifiedArray.push(array[index]);
     }
   }
@@ -134,8 +134,17 @@ const mkdir = function (args) {
   }
 }
 
-const functions = [cd, ls, clear, clear, mkdir];
-const functionsRegistery = ["cd", "ls", "clear", "cls", "mkdir"];
+const rm = function (args) {
+  for (let index = 0; index < args.length; index++) {
+    const currentDirectory = getCurrentFileSystem();
+    const element = args[index];
+    const elementIndex = findFolderIndex(element);
+    currentDirectory.splice(elementIndex, 1);
+  }
+}
+
+const functions = [cd, ls, clear, clear, mkdir, rm];
+const functionsRegistery = ["cd", "ls", "clear", "cls", "mkdir", "rm"];
 
 const userInput = function (path) {
   const message = green(" " + path + " ~");
