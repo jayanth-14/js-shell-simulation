@@ -72,6 +72,55 @@ const rootFileSystem = [["root/", [
   ["pictures/", []],
 ]]];
 
+const DOCS = [
+  ["cd", "1", "Change directory", "cd <folderName>"],
+  ["ls", "1", "List files and folders in current directory", "ls <folderName>"],
+  ["pwd", "0", "Show current working directory", "pwd"],
+  [
+    "mkdir",
+    "n",
+    "Create new directory",
+    "mkdir <folderName1>  <folderName2> ...",
+  ],
+  [
+    "rm",
+    "n",
+    "Remove file or directory",
+    "rm <folderName1>  <folderName2> ...",
+  ],
+  ["touch", "n", "Create new file", "touch <fileName1>  <fileName2> ..."],
+  [
+    "cat",
+    "1 - 2",
+    "Read or write content to file - > = write and >> = append",
+    "cat <fileName> or cat > <fileName> or cat >> <fileName>",
+  ],
+  ["echo", "n", "Print text to screen", "echo <string1> <string2> ..."],
+  ["clear / cls", "0", "Clear the terminal screen", "clear / cls"],
+  ["help", "0", "Display this help page", "help"],
+  ["exit", "0", "Exit the JSH shell", "exit"],
+];
+
+const help = function () {
+  const table = `
+--------------------------------------------------------------------------------------------------------
+  Command     Args-Count     Description                                          Usage
+--------------------------------------------------------------------------------------------------------
+  cd          1       Change directory                                    cd <folderName>
+  ls          1       List files and folders in current directory         ls <folderName>
+  pwd         0       Show current working directory                      pwd
+  mkdir       n       Create new directory                                mkdir <folderName1>  <folderName2> ...
+  rm          n       Remove file or directory                            rm <folderName1>  <folderName2> ...
+  touch       n       Create new file                                     touch <fileName1>  <fileName2> ...
+  cat         1 - 2   Read or write content to file(>/>>  write/append)   cat <fileName> or cat > / >> <fileName>
+  echo        n       Print text to screen                                echo <string1> <string2> ...
+  clear/cls   0       Clear the terminal screen                           clear / cls
+  help        0       Display this help page                              help
+  exit        0       Exit the JSH shell                                  exit
+`;
+console.log(table);
+};
+
 const generatePwd = function () {
   const folders = [];
   let currentFileSystem = rootFileSystem;
@@ -195,7 +244,11 @@ const touch = function (args) {
 const textEditor = function () {
   const text = [];
   console.log(
-    yellow(`Enter your text below. Type ${bold(":wq") + yellow("to save and exit.")}`),
+    yellow(
+      `Enter your text below. Type ${
+        bold(":wq") + yellow("to save and exit.")
+      }`,
+    ),
   );
   while (true) {
     const line = prompt("");
@@ -251,7 +304,11 @@ const cat = function (args) {
   console.log(contents);
 };
 
-const functions = [cd, ls, clear, clear, mkdir, rm, pwd, echo, touch, cat];
+const exit = function() {
+  return "exit";
+}
+
+const functions = [cd, ls, clear, clear, mkdir, rm, pwd, echo, touch, cat, help, exit];
 const functionsRegistery = [
   "cd",
   "ls",
@@ -263,6 +320,8 @@ const functionsRegistery = [
   "echo",
   "touch",
   "cat",
+  "help",
+  "exit"
 ];
 
 const userInput = function (path) {
@@ -283,7 +342,7 @@ const getCommandReference = function (commandName) {
 const executeCommand = function (commandInfo) {
   const commandName = commandInfo[0];
   const command = getCommandReference(commandName);
-  command(commandInfo.slice(1));
+  return command(commandInfo.slice(1));
 };
 
 const printBanner = function () {
@@ -300,10 +359,11 @@ const printBanner = function () {
 const start = function () {
   clear();
   printBanner();
-  while (true) {
+  let shouldRun = true;
+  while (shouldRun) {
     const pwd = generatePwd();
     const commandInfo = userInput(pwd);
-    executeCommand(commandInfo);
+    shouldRun = executeCommand(commandInfo) !== "exit";
   }
 };
 
