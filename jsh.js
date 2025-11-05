@@ -7,6 +7,7 @@ const rootFileSystem = [["root", [
   ["documents", []],
   ["pictures", []],
 ]]];
+
 const generatePwd = function () {
   const location = pwdRegistery;
   const folders = [];
@@ -21,8 +22,11 @@ const generatePwd = function () {
 };
 
 const cd = function (folderName) {
-  console.log("executing cd : ", folderName);
   if (folderName === "..") {
+    if (pwdRegistery.length === 1) {
+      console.log("Couldn't go backward from root");
+      return;
+    }
     return pwdRegistery.pop();
   }
   pwdRegistery.push(0);
@@ -31,12 +35,11 @@ const cd = function (folderName) {
 const ls = function () {};
 
 const functions = [cd, ls];
-
 const functionsRegistery = ["cd", "ls"];
 
 const userInput = function (userName, path) {
   const leading = userName + "@" + path + ">";
-  return prompt(leading).split(" ");
+  return prompt(leading).trim().split(" ");
 };
 
 const getCommandReference = function (commandName) {
@@ -57,7 +60,7 @@ const start = function () {
   while (true) {
     const pwd = generatePwd();
     const commandInfo = userInput(userName, pwd);
-    executeCommand(commandInfo)
+    executeCommand(commandInfo);
   }
 };
 
