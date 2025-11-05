@@ -18,6 +18,15 @@ const filter = function (array, method) {
   return modifiedArray;
 };
 
+const findIndex = function (array, value, method) {
+  for (let index = 0; index < array.length; index++) {
+    if (method(array[index], value)) {
+      return index;
+    }
+  }
+  return -1;
+}
+
 let userName = "root";
 let pwdRegistery = [0, 0, 0];
 
@@ -62,6 +71,8 @@ const getFileSystemContents = function () {
 
 const findFolderIndex = function (folderName) {
   const currentDirectory = getCurrentFileSystem();
+  const mathed = findIndex(currentDirectory, folderName, function(value, folder) {return Array.isArray(value) ? value[0] === folder : value === folder});
+  return mathed;
 };
 
 const cd = function (folderName) {
@@ -72,7 +83,13 @@ const cd = function (folderName) {
     }
     return pwdRegistery.pop();
   }
-  pwdRegistery.push(0);
+  if (folderName === ".") {return}
+  const folderIndex = findFolderIndex(folderName);
+  if (folderIndex === -1) {
+    console.log("cd: no such file or directory: " + folderName);
+    return;
+  }
+  pwdRegistery.push(folderIndex);
 };
 
 const ls = function () {
@@ -84,7 +101,7 @@ const functions = [cd, ls];
 const functionsRegistery = ["cd", "ls"];
 
 const userInput = function (userName, path) {
-  const leading = "\n" + userName + "@" + path + ">";
+  const leading = userName + "@" + path + ">";
   return prompt(leading).trim().split(" ");
 };
 
@@ -94,6 +111,8 @@ const getCommandReference = function (commandName) {
       return functions[index];
     }
   }
+  console.log("jsh: command not found: " + commandName);
+  return function(){}
 };
 
 const executeCommand = function (commandInfo) {
