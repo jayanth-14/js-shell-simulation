@@ -28,6 +28,9 @@ const findIndex = function (array, value, method) {
 };
 
 // colors
+const bold = function (text) {
+  return "\x1B[1m" + text + "\x1B[0m";
+};
 const red = function (text) {
   return "\x1B[31m" + text + "\x1B[0m";
 };
@@ -163,7 +166,7 @@ const functions = [cd, ls, clear, clear, mkdir, rm, pwd, echo];
 const functionsRegistery = ["cd", "ls", "clear", "cls", "mkdir", "rm", "pwd", "echo"];
 
 const userInput = function (path) {
-  const message = green(path + " ~");
+  const message = bold(green(path + " ~"));
   return prompt(message).trim().split(" ");
 };
 
