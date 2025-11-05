@@ -57,7 +57,7 @@ const clear = function () {
 
 const displayError = function (message) {
   console.log(red(message));
-}
+};
 
 let pwdRegistery = [0, 0, 0];
 
@@ -186,23 +186,53 @@ const touch = function (args) {
     const fileName = args[index];
     currentDirectory.push(create(fileName, false));
   }
-}
+};
+
+const textEditor = function () {
+  const text = [];
+  console.log(
+    yellow(`Enter your text below. Type ${bold(":wq")} to save and exit.`),
+  );
+  while (true) {
+    const line = prompt("");
+    if (line.endsWith(":wq")) {
+      text.push(line.slice(0,line.length - 3));
+      return text.join("\n");
+    }
+    text.push(line);
+  }
+};
 
 const cat = function (args) {
-  const fileName = args[0];
+  const currentDirectory = getCurrentFileSystem();
+  let fileName = args[0];
+  if (fileName === ">") {
+    fileName = args[1];
+    const contents = textEditor();
+    const fileIndex = findFolderIndex(fileName);
+    currentDirectory[fileIndex][1].splice(0);
+    currentDirectory[fileIndex][1][0] = contents;
+    return;
+  }
+  if (fileName === ">>") {
+    fileName = args[1];
+    const contents = textEditor();
+    const fileIndex = findFolderIndex(fileName);
+    currentDirectory[fileIndex][1].push(contents);
+    return;
+  }
   const fileIndex = findFolderIndex(fileName);
   if (isFolder(fileIndex)) {
-    displayError("jsh: cat: "+ fileName +" : Is a directory");
+    displayError("jsh: cat: " + fileName + " : Is a directory");
     return;
   }
   if (fileIndex === -1) {
-    displayError("jsh: cat: "+ fileName +" : No such file or directory");
+    displayError("jsh: cat: " + fileName + " : No such file or directory");
     return;
   }
-  const currentDirectory = getCurrentFileSystem();
   const contents = currentDirectory[fileIndex][1].join("\n");
   console.log(contents);
-}
+};
 
 const functions = [cd, ls, clear, clear, mkdir, rm, pwd, echo, touch, cat];
 const functionsRegistery = [
@@ -215,7 +245,7 @@ const functionsRegistery = [
   "pwd",
   "echo",
   "touch",
-  "cat"
+  "cat",
 ];
 
 const userInput = function (path) {
