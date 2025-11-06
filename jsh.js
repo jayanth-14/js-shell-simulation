@@ -377,6 +377,9 @@ const getCommandReference = function (commandName) {
 
 const executeCommand = function (commandInfo) {
   const commandName = commandInfo[0];
+  if (commandName === "") {
+    return;
+  }
   const command = getCommandReference(commandName);
   return command(commandInfo.slice(1));
 };
