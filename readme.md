@@ -7,11 +7,30 @@ files will be in string format
   - second element : all the files in array format
 
 # Current bugs
-- Cat display raising an error if file is not available.
+- [x] Cat display raising an error if file is not available.
 
 # future modifictions
 - a custom command `showFs` to show the array format of the current directory for the user for better understanding of how my file system works.
 - piping can be implemented.
 - redirections can be implemented.
 - variables can be implemented.
+- arrange the files by name.
+- change color and bg color for background
 
+
+
+folder structure = ["folderName", []];
+contents = [["sub1",[]], ["sub2", []]];
+
+content - [["fol", []]]
+
+
+const rootFileSystem = [["root/", [
+  ["js/", [["assignments/", [["functions/", []], ["recursion/", []]]], [
+    "hello.js",
+    ["hello world, this is the data written in hello.js"],
+  ]]],
+  ["downloads/", []],
+  ["documents/", []],
+  ["pictures/", []],
+]]];

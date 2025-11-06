@@ -51,6 +51,14 @@ const cyan = function (text) {
   return "\x1B[36m" + text + "\x1B[0m";
 };
 
+function custom(text, code) {
+  return "\x1B[38;5;" + code + "m" + text + "\x1B[0m";
+}
+
+function customBg(text, code) {
+  return "\x1B[48;5;" + code + "m" + text + "\x1B[0m";
+}
+
 const clear = function () {
   console.clear();
 };
@@ -60,7 +68,9 @@ const displayError = function (message) {
 };
 
 // shell logic starts here
-let pwdRegistry = [0, 0, 0]; // the current location pointer
+let pwdRegistry = [0, 1]; // the current location pointer
+let fontColorCode = 214;
+let backgroundColorCode = undefined;
 
 const rootFileSystem = [["root/", [
   ["js/", [["assignments/", [["functions/", []], ["recursion/", []]]], [
@@ -182,17 +192,21 @@ const moveFileLocationBackward = function () {
 
 const cd = function (args) {
   const folderName = args[0];
+  if (folderName === undefined) {
+    pwdRegistry.splice(1);
+    return;
+  }
   if (folderName === "..") {
     return moveFileLocationBackward();
   }
   if (folderName === ".") return;
   const folderIndex = findFolderIndex(folderName);
-  if (!isFolder(folderIndex)) {
-    displayError("jsh: cd: not a directory: " + folderName);
-    return;
-  }
   if (folderIndex === -1) {
     displayError("jsh : cd: no such file or directory: " + folderName);
+    return;
+  }
+  if (!isFolder(folderIndex)) {
+    displayError("jsh: cd: not a directory: " + folderName);
     return;
   }
   pwdRegistry.push(folderIndex);
@@ -246,7 +260,7 @@ const textEditor = function () {
   console.log(
     yellow(
       `Enter your text below. Type ${
-        bold(":wq") + yellow("to save and exit.")
+        bold(":wq") + yellow(" to save and exit.")
       }`,
     ),
   );
@@ -314,7 +328,16 @@ const showFs = function() {
   console.log(currentDirectory);
 }
 
-const functions = [cd, ls, clear, clear, mkdir, rm, pwd, echo, touch, cat, help, exit, showFs];
+const changePromptColor = function(args) {
+  if (args[0] !== undefined) {
+    fontColorCode = parseInt(args[0]);
+  }
+  if (args[1] !== undefined) {
+    backgroundColorCode = args[1] === "no-color" ? undefined : args[1];
+  }
+}
+
+const functions = [cd, ls, clear, clear, mkdir, rm, pwd, echo, touch, cat, help, exit, showFs, changePromptColor];
 const functionsRegistery = [
   "cd",
   "ls",
@@ -328,12 +351,18 @@ const functionsRegistery = [
   "cat",
   "help",
   "exit",
-  "showFs"
+  "showFs",
+  "change"
 ];
 
+const changeBackground = function (message) {
+  return backgroundColorCode === undefined ? message : customBg(message, backgroundColorCode);
+}
+
 const userInput = function (path) {
-  const message = bold(green(path + " ~"));
-  return prompt(message).trim().split(" ");
+  const message = bold(custom("~ \u{E0A0} " + path, fontColorCode));
+  const customizedMessage = changeBackground(message);
+  return prompt(customizedMessage).trim().split(" ");
 };
 
 const getCommandReference = function (commandName) {
