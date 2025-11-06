@@ -330,10 +330,10 @@ const showFs = function() {
 
 const changePromptColor = function(args) {
   if (args[0] !== undefined) {
-    fontColorCode = parseInt(args[0]);
+    fontColorCode = args[0] === "no-color" ? 7 : parseInt(args[0]);
   }
   if (args[1] !== undefined) {
-    backgroundColorCode = args[1] === "no-color" ? undefined : args[1];
+    backgroundColorCode = args[1] === "no-color" ? undefined : parseInt(args[1]);
   }
 }
 
