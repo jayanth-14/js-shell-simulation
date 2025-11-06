@@ -152,15 +152,21 @@ const getCurrentFileSystem = function () {
   return currentFileSystem;
 };
 
-const stripContents = function (content) {
-  return (content[0].endsWith("/")
-    ? blue("./" + content[0])
-    : cyan("./" + content[0]));
+const getFolderName = function(folder) {
+  return folder[0];
+}
+
+const categoriseFolders = function (content) {
+  return (content.endsWith("/")
+    ? blue("./" + content)
+    : cyan("./" + content));
 };
 
 const getFileSystemContents = function () {
   const currentDirectory = getCurrentFileSystem();
-  const contents = map(currentDirectory, stripContents);
+  const folders = map(currentDirectory, getFolderName);
+  const available = filter(function(name) {return !name.startsWith(".")}, folders);
+  const contents = map(available, categoriseFolders);
   return contents.join("\t");
 };
 
