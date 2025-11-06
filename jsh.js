@@ -169,7 +169,7 @@ const findFolderIndex = function (folderName) {
 const isFolder = function (folderIndex) {
   const currentDirectory = getCurrentFileSystem();
   const folderName = currentDirectory[folderIndex];
-  return folderIndex !== -1 && folderName[0].endsWith("/");
+  return folderName[0].endsWith("/");
 };
 
 const moveFileLocationBackward = function () {
@@ -212,7 +212,7 @@ const mkdir = function (args) {
   const currentDirectory = getCurrentFileSystem();
   for (let index = 0; index < args.length; index++) {
     const folderName = args[index];
-    currentDirectory.push(createFolder(folderName, true));
+    currentDirectory.push(create(folderName, true));
   }
 };
 
@@ -293,8 +293,9 @@ const cat = function (args) {
   }
 
   const fileIndex = findFolderIndex(fileName);
-  if (isFolder(fileIndex)) {
-    const errorMessage = fileIndex === -1
+  const fileNotFound = fileIndex === -1;
+  if (fileNotFound || isFolder(fileIndex)) {
+    const errorMessage = fileNotFound
       ? "jsh: cat: " + fileName + " : No such file or directory"
       : "jsh: cat: " + fileName + " : Is a directory";
     return displayError(errorMessage);
@@ -308,7 +309,12 @@ const exit = function() {
   return "exit";
 }
 
-const functions = [cd, ls, clear, clear, mkdir, rm, pwd, echo, touch, cat, help, exit];
+const showFs = function() {
+  const currentDirectory = getCurrentFileSystem();
+  console.log(currentDirectory);
+}
+
+const functions = [cd, ls, clear, clear, mkdir, rm, pwd, echo, touch, cat, help, exit, showFs];
 const functionsRegistery = [
   "cd",
   "ls",
@@ -321,7 +327,8 @@ const functionsRegistery = [
   "touch",
   "cat",
   "help",
-  "exit"
+  "exit",
+  "showFs"
 ];
 
 const userInput = function (path) {
