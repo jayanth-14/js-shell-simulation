@@ -191,8 +191,7 @@ const isFolder = function (folderIndex) {
 
 const moveFileLocationBackward = function () {
   if (pwdRegistry.length === 1) {
-    displayError("Couldn't go backward from root");
-    return;
+    return displayError("Couldn't go backward from root");
   }
   pwdRegistry.pop();
   return;
@@ -210,12 +209,10 @@ const cd = function (args) {
   if (folderName === ".") return;
   const folderIndex = findFolderIndex(folderName);
   if (folderIndex === -1) {
-    displayError("jsh : cd: no such file or directory: " + folderName);
-    return;
+    return displayError("jsh : cd: no such file or directory: " + folderName);
   }
   if (!isFolder(folderIndex)) {
-    displayError("jsh: cd: not a directory: " + folderName);
-    return;
+    return displayError("jsh: cd: not a directory: " + folderName);
   }
   pwdRegistry.push(folderIndex);
 };
@@ -402,8 +399,7 @@ const getCommandReference = function (commandName) {
       return functions[index];
     }
   }
-  displayError("jsh: command not found: " + commandName);
-  return function () {};
+  return displayError("jsh: command not found: " + commandName);
 };
 
 const executeCommand = function (commandInfo) {
