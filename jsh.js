@@ -1,5 +1,6 @@
 // utilitities implemented by me
-// map - takes an array and function references and gives back a new array based on the function references
+// map - takes an array and function references and gives back a new array 
+// based on the function references
 const map = function (array, method) {
   const modifiedArray = [];
   for (let index = 0; index < array.length; index++) {
@@ -68,7 +69,7 @@ const displayError = function (message) {
 };
 
 // shell logic starts here
-let pwdRegistry = [0, 1]; // the current location pointer
+let pwdRegistry = [0, 0, 0, 1]; // the current location pointer
 let shouldRun = true;
 let fontColorCode = 214;
 let backgroundColorCode = undefined;
@@ -144,13 +145,37 @@ const generatePwd = function () {
   return folders.join("");
 };
 
-const getCurrentFileSystem = function () {
+const getFileSystem = function (locationArray) {
   let currentFileSystem = rootFileSystem;
-  for (let index = 0; index < pwdRegistry.length; index++) {
-    const location = pwdRegistry[index];
+  for (let index = 0; index < locationArray.length; index++) {
+    const location = locationArray[index];
     currentFileSystem = currentFileSystem[location][1];
   }
   return currentFileSystem;
+};
+
+const getCurrentFileSystem = function () {
+  return getFileSystem(pwdRegistry);
+};
+
+const getLocation = function (destination) {
+  const destinationArray = destination.split("/");
+  const locationArray = pwdRegistry.slice();
+  for (let index = 0; index < destinationArray.length; index++) {
+    const directory = destinationArray[index];
+    if (directory === "..") {
+      locationArray.pop();
+      continue;
+    }
+    if (directory === ".") {continue}
+    const currentFileSystem = getFileSystem(locationArray);
+    const directoryIndex = findFolderIndex(directory, currentFileSystem);
+    if (directoryIndex === -1) {
+      return [];
+    }
+    locationArray.push(directoryIndex);
+  }
+  return locationArray;
 };
 
 const getFolderName = function (folder) {
@@ -158,7 +183,7 @@ const getFolderName = function (folder) {
 };
 
 const categoriseFolders = function (content) {
-  return (content.endsWith("/") ? blue("./" + content) : cyan("./" + content));
+  return content.endsWith("/") ? blue("./" + content) : cyan("./" + content);
 };
 
 const getFileSystemContents = function () {
@@ -171,11 +196,9 @@ const getFileSystemContents = function () {
   return contents.join("\t");
 };
 
-const findFolderIndex = function (folderName) {
-  const currentDirectory = getCurrentFileSystem();
-  const mathed = findIndex(
-    currentDirectory,
-    folderName,
+const findFolderIndex = function (folderName, fileSystem) {
+  const currentDirectory = fileSystem || getCurrentFileSystem();
+  const mathed = findIndex(currentDirectory, folderName, 
     function (value, folder) {
       return value[0] === folder || value[0] === folder + "/";
     },
@@ -183,18 +206,10 @@ const findFolderIndex = function (folderName) {
   return mathed;
 };
 
-const isFolder = function (folderIndex) {
-  const currentDirectory = getCurrentFileSystem();
+const isFolder = function (folderIndex, fileSystem) {
+  const currentDirectory = fileSystem || getCurrentFileSystem();
   const folderName = currentDirectory[folderIndex];
   return folderName[0].endsWith("/");
-};
-
-const moveFileLocationBackward = function () {
-  if (pwdRegistry.length === 1) {
-    return displayError("Couldn't go backward from root");
-  }
-  pwdRegistry.pop();
-  return;
 };
 
 const cd = function (args) {
@@ -203,18 +218,20 @@ const cd = function (args) {
     pwdRegistry.splice(1);
     return;
   }
-  if (folderName === "..") {
-    return moveFileLocationBackward();
+  if (folderName === ".." && pwd.length === 1) {
+    return displayError("jsh: cd : couldn't go anymore backward");
   }
-  if (folderName === ".") return;
-  const folderIndex = findFolderIndex(folderName);
-  if (folderIndex === -1) {
+  const location = getLocation(folderName);
+  if (location.length === 0) {
     return displayError("jsh : cd: no such file or directory: " + folderName);
   }
-  if (!isFolder(folderIndex)) {
-    return displayError("jsh: cd: not a directory: " + folderName);
-  }
-  pwdRegistry.push(folderIndex);
+  const fileSystem = getFileSystem(location);
+  const folderIndex = findFolderIndex(folderName);
+  // if (!isFolder(folderIndex, fileSystem)) {
+  //   return displayError("jsh: cd: not a directory: " + folderName);
+  // }
+  pwdRegistry = location;
+  return;
 };
 
 const ls = function () {
@@ -222,8 +239,8 @@ const ls = function () {
   return contents;
 };
 
-const create = function (folderName, isFolder) {
-  const name = folderName + (isFolder ? "/" : "");
+const create = function (folderName, isAFolder) {
+  const name = folderName + (isAFolder ? "/" : "");
   return [name, []];
 };
 
