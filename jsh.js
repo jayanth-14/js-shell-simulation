@@ -1,24 +1,3 @@
-// utilitities implemented by me
-// map - takes an array and function references and gives back a new array 
-// based on the function references
-const map = function (array, method) {
-  const modifiedArray = [];
-  for (let index = 0; index < array.length; index++) {
-    modifiedArray.push(method(array[index]));
-  }
-  return modifiedArray;
-};
-
-const filter = function (method, array, value) {
-  const modifiedArray = [];
-  for (let index = 0; index < array.length; index++) {
-    if (method(array[index], index, value)) {
-      modifiedArray.push(array[index]);
-    }
-  }
-  return modifiedArray;
-};
-
 const findIndex = function (array, value, method) {
   for (let index = 0; index < array.length; index++) {
     if (method(array[index], value)) {
@@ -29,90 +8,59 @@ const findIndex = function (array, value, method) {
 };
 
 // colors
-const bold = function (text) {
-  return "\x1B[1m" + text + "\x1B[0m";
-};
-const red = function (text) {
-  return "\x1B[31m" + text + "\x1B[0m";
-};
-
-const green = function (text) {
-  return "\x1B[32m" + text + "\x1B[0m";
-};
-
-const yellow = function (text) {
-  return "\x1B[33m" + text + "\x1B[0m";
-};
-
-const blue = function (text) {
-  return "\x1B[34m" + text + "\x1B[0m";
-};
-
-const cyan = function (text) {
-  return "\x1B[36m" + text + "\x1B[0m";
-};
-
-function custom(text, code) {
-  return "\x1B[38;5;" + code + "m" + text + "\x1B[0m";
-}
-
-function customBg(text, code) {
-  return "\x1B[48;5;" + code + "m" + text + "\x1B[0m";
-}
-
-const clear = function () {
-  console.clear();
-};
-
-const displayError = function (message) {
-  return red(message);
-};
+const bold = (text) => "\x1B[1m" + text + "\x1B[0m";
+const red = (text) => "\x1B[31m" + text + "\x1B[0m";
+const green = (text) => "\x1B[32m" + text + "\x1B[0m";
+const yellow = (text) => "\x1B[33m" + text + "\x1B[0m";
+const blue = (text) => "\x1B[34m" + text + "\x1B[0m";
+const cyan = (text) => "\x1B[36m" + text + "\x1B[0m";
+const custom = (text, colorCode) =>
+  "\x1B[38;5;" + colorCode + "m" + text + "\x1B[0m";
+const customBg = (text, colorCode) =>
+  "\x1B[48;5;" + colorCode + "m" + text + "\x1B[0m";
+const clear = () => console.clear();
+const displayError = (message) => red(message);
 
 // shell logic starts here
-let pwdRegistry = [0, 0, 0, 1]; // the current location pointer
+// let pwdRegistry = [0, 1]; // the current location pointer
 let shouldRun = true;
 let fontColorCode = 214;
 let backgroundColorCode = undefined;
 
-const rootFileSystem = [["root/", [
-  ["js/", [["assignments/", [["functions/", []], ["recursion/", []]]], [
-    "hello.js",
-    ["hello world, this is the data written in hello.js"],
-  ]]],
-  ["downloads/", []],
-  ["documents/", []],
-  ["pictures/", []],
-]]];
+let rootFileSystem = [["root/", []]];
 
-const DOCS = [
-  ["cd", "1", "Change directory", "cd <folderName>"],
-  ["ls", "1", "List files and folders in current directory", "ls <folderName>"],
-  ["pwd", "0", "Show current working directory", "pwd"],
-  [
-    "mkdir",
-    "n",
-    "Create new directory",
-    "mkdir <folderName1>  <folderName2> ...",
-  ],
-  [
-    "rm",
-    "n",
-    "Remove file or directory",
-    "rm <folderName1>  <folderName2> ...",
-  ],
-  ["touch", "n", "Create new file", "touch <fileName1>  <fileName2> ..."],
-  [
-    "cat",
-    "1 - 2",
-    "Read or write content to file - > = write and >> = append",
-    "cat <fileName> or cat > <fileName> or cat >> <fileName>",
-  ],
-  ["echo", "n", "Print text to screen", "echo <string1> <string2> ..."],
-  ["clear / cls", "0", "Clear the terminal screen", "clear / cls"],
-  ["help", "0", "Display this help page", "help"],
-  ["exit", "0", "Exit the JSH shell", "exit"],
-];
+let currentDirectory = rootFileSystem[0];
 
+const directorySkeleton = name => {
+  const folder = [name, []];
+  return folder;
+}
+const referenceSkeleton = (name, reference) => [name, [reference]];
+const createSelfReference = directory => directory.push(referenceSkeleton(".", directory));
+const addToContents = (parentDirectory, childDirectory) => parentDirectory[1].push(childDirectory);
+const createReferences = (directory, parent) => {
+  const selfReference = referenceSkeleton(".", directory);
+  const parentReference = referenceSkeleton("..", parent);
+  addToContents(directory, selfReference);
+  addToContents(directory, parentReference);
+}
+const addDirectory = (parentDirectory, childDirectory) => {
+  const parentReference = referenceSkeleton("..", parentDirectory);
+  addToContents(childDirectory, parentReference);
+  addToContents(parentDirectory, childDirectory);
+}
+const createDirectory = (directoryName, parent) => {
+  const directory = directorySkeleton(directoryName);
+  createReferences(directory, parent);
+  return directory;
+}
+const addInitialDirectories = () => {
+  createSelfReference(currentDirectory);
+  addToContents(currentDirectory, createDirectory("js", currentDirectory));
+  addToContents(currentDirectory, createDirectory("Downloads", currentDirectory));
+  addToContents(currentDirectory, createDirectory("Desktop", currentDirectory));
+  addToContents(currentDirectory, createDirectory("Pictures", currentDirectory));
+};
 const help = function () {
   const table = `
 --------------------------------------------------------------------------------------------------------
@@ -145,60 +93,37 @@ const generatePwd = function () {
   return folders.join("");
 };
 
-const getFileSystem = function (locationArray) {
+const getCurrentFileSystem = function () {
   let currentFileSystem = rootFileSystem;
-  for (let index = 0; index < locationArray.length; index++) {
-    const location = locationArray[index];
+  for (let index = 0; index < pwdRegistry.length; index++) {
+    const location = pwdRegistry[index];
     currentFileSystem = currentFileSystem[location][1];
   }
   return currentFileSystem;
 };
 
-const getCurrentFileSystem = function () {
-  return getFileSystem(pwdRegistry);
-};
+const getFolderName = (folder) => folder[0];
+const colorFolder = (folder) => blue("./" + folder);
+const colorFile = (file) => cyan("./" + file);
+const isFolder = (folderCandidate) => folderCandidate.endsWith("/");
+const categoriseFolders = (folder) =>
+  isFolder(folder) ? colorFolder(folder) : colorFile(folder);
+const isHiddenFile = (fileName) => fileName.startsWith(".");
+const isVisibleFile = (fileName) => !isHiddenFile(fileName);
 
-const getLocation = function (destination) {
-  const destinationArray = destination.split("/");
-  const locationArray = pwdRegistry.slice();
-  for (let index = 0; index < destinationArray.length; index++) {
-    const directory = destinationArray[index];
-    if (directory === "..") {
-      locationArray.pop();
-      continue;
-    }
-    if (directory === ".") {continue}
-    const currentFileSystem = getFileSystem(locationArray);
-    const directoryIndex = findFolderIndex(directory, currentFileSystem);
-    if (directoryIndex === -1) {
-      return [];
-    }
-    locationArray.push(directoryIndex);
-  }
-  return locationArray;
-};
-
-const getFolderName = function (folder) {
-  return folder[0];
-};
-
-const categoriseFolders = function (content) {
-  return content.endsWith("/") ? blue("./" + content) : cyan("./" + content);
-};
-
-const getFileSystemContents = function () {
-  const currentDirectory = getCurrentFileSystem();
-  const folders = map(currentDirectory, getFolderName);
-  const available = filter(function (name) {
-    return !name.startsWith(".");
-  }, folders);
-  const contents = map(available, categoriseFolders);
+const getFileSystemContents = () => {
+  // const currentDirectory = getCurrentFileSystem();
+  const folders = currentDirectory.map(getFolderName);
+  const available = folders.filter(isVisibleFile);
+  const contents = available.map(categoriseFolders);
   return contents.join("\t");
 };
 
-const findFolderIndex = function (folderName, fileSystem) {
-  const currentDirectory = fileSystem || getCurrentFileSystem();
-  const mathed = findIndex(currentDirectory, folderName, 
+const findFolderIndex = function (folderName) {
+  const currentDirectory = getCurrentFileSystem();
+  const mathed = findIndex(
+    currentDirectory,
+    folderName,
     function (value, folder) {
       return value[0] === folder || value[0] === folder + "/";
     },
@@ -206,41 +131,50 @@ const findFolderIndex = function (folderName, fileSystem) {
   return mathed;
 };
 
-const isFolder = function (folderIndex, fileSystem) {
-  const currentDirectory = fileSystem || getCurrentFileSystem();
-  const folderName = currentDirectory[folderIndex];
-  return folderName[0].endsWith("/");
-};
+// const isFolder = function (folderIndex) {
+//   const currentDirectory = getCurrentFileSystem();
+//   const folderName = currentDirectory[folderIndex];
+//   return folderName[0].endsWith("/");
+// };
 
-const cd = function (args) {
-  const folderName = args[0];
-  if (folderName === undefined) {
-    pwdRegistry.splice(1);
-    return;
+const moveFileLocationBackward = function () {
+  if (pwdRegistry.length === 1) {
+    return displayError("Couldn't go backward from root");
   }
-  if (folderName === ".." && pwd.length === 1) {
-    return displayError("jsh: cd : couldn't go anymore backward");
-  }
-  const location = getLocation(folderName);
-  if (location.length === 0) {
-    return displayError("jsh : cd: no such file or directory: " + folderName);
-  }
-  const fileSystem = getFileSystem(location);
-  const folderIndex = findFolderIndex(folderName);
-  // if (!isFolder(folderIndex, fileSystem)) {
-  //   return displayError("jsh: cd: not a directory: " + folderName);
-  // }
-  pwdRegistry = location;
+  pwdRegistry.pop();
   return;
 };
 
+// const cd = function (args) {
+//   const folderName = args[0];
+//   if (folderName === undefined) {
+//     // pwdRegistry.splice(1);
+//     currentDirectory = rootFileSystem[0];
+//     return;
+//   }
+//   if (folderName === "..") {
+//     currentDirectory = c
+//     return moveFileLocationBackward();
+//   }
+//   if (folderName === ".") return;
+//   const folderIndex = findFolderIndex(folderName);
+//   if (folderIndex === -1) {
+//     return displayError("jsh : cd: no such file or directory: " + folderName);
+//   }
+//   // if (!isFolder(folderIndex)) {
+//   //   return displayError("jsh: cd: not a directory: " + folderName);
+//   // }
+//   pwdRegistry.push(folderIndex);
+// };
+
 const ls = function () {
   const contents = getFileSystemContents();
+  // const files =
   return contents;
 };
 
-const create = function (folderName, isAFolder) {
-  const name = folderName + (isAFolder ? "/" : "");
+const create = function (folderName, isFolder) {
+  const name = folderName + (isFolder ? "/" : "");
   return [name, []];
 };
 
@@ -366,7 +300,7 @@ const changePromptColor = function (args) {
 };
 
 const functions = [
-  cd,
+  // cd,
   ls,
   clear,
   clear,
@@ -434,9 +368,9 @@ const redirectToFile = function (output, destination, isWriteMode) {
     return;
   }
   writeToFile(output, destination, true);
-}
+};
 
-const redirect = function(output, destination, isWriteMode) {
+const redirect = function (output, destination, isWriteMode) {
   if (output === undefined) {
     return;
   }
@@ -445,11 +379,11 @@ const redirect = function(output, destination, isWriteMode) {
     return;
   }
   redirectToFile(output, destination.trim(), isWriteMode);
-}
+};
 
-const redirectSymbol = function(commandString) {
+const redirectSymbol = function (commandString) {
   return commandString.includes(">>") ? ">>" : ">";
-}
+};
 
 const printBanner = function () {
   console.log(green(bold(`
@@ -463,17 +397,26 @@ const printBanner = function () {
 };
 
 const start = function () {
-  clear();
-  printBanner();
-  while (shouldRun) {
-    const pwd = generatePwd();
-    const commandString = userInput(pwd);
-    const redirectionSymbol = redirectSymbol(commandString);
-    const commandData = commandString.split(redirectionSymbol);
-    const output = executeCommand(commandData[0].split(" "));
-    const isWriteMode = redirectionSymbol === ">>";
-    redirect(output, commandData[1], isWriteMode);
-  }
+  // clear();
+  // printBanner();
+  // while (shouldRun) {
+  //   const pwd = generatePwd();
+  //   const commandString = userInput(pwd);
+  //   const redirectionSymbol = redirectSymbol(commandString);
+  //   const commandData = commandString.split(redirectionSymbol);
+  //   const output = executeCommand(commandData[0].split(" "));
+  //   const isWriteMode = redirectionSymbol === ">>";
+  //   redirect(output, commandData[1], isWriteMode);
+  // }
+  addInitialDirectories();
+  console.log("rootFileSystem : ", rootFileSystem);
+  console.log("CurrentDirectory : ", currentDirectory);
+  prompt();
+  currentDirectory = currentDirectory[1][0];
+  console.log("CurrentDirectory : ", currentDirectory);
+  prompt();
+  currentDirectory = currentDirectory[1][1][1];
+  console.log("CurrentDirectory : ", currentDirectory);
 };
 
 start();
