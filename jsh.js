@@ -69,6 +69,7 @@ const displayError = function (message) {
 
 // shell logic starts here
 let pwdRegistry = [0, 1]; // the current location pointer
+let shouldRun = true;
 let fontColorCode = 214;
 let backgroundColorCode = undefined;
 
@@ -128,7 +129,7 @@ const help = function () {
   help        0       Display this help page                              help
   exit        0       Exit the JSH shell                                  exit
 `;
-console.log(table);
+  console.log(table);
 };
 
 const generatePwd = function () {
@@ -152,20 +153,20 @@ const getCurrentFileSystem = function () {
   return currentFileSystem;
 };
 
-const getFolderName = function(folder) {
+const getFolderName = function (folder) {
   return folder[0];
-}
+};
 
 const categoriseFolders = function (content) {
-  return (content.endsWith("/")
-    ? blue("./" + content)
-    : cyan("./" + content));
+  return (content.endsWith("/") ? blue("./" + content) : cyan("./" + content));
 };
 
 const getFileSystemContents = function () {
   const currentDirectory = getCurrentFileSystem();
   const folders = map(currentDirectory, getFolderName);
-  const available = filter(function(name) {return !name.startsWith(".")}, folders);
+  const available = filter(function (name) {
+    return !name.startsWith(".");
+  }, folders);
   const contents = map(available, categoriseFolders);
   return contents.join("\t");
 };
@@ -193,7 +194,8 @@ const moveFileLocationBackward = function () {
     displayError("Couldn't go backward from root");
     return;
   }
-  return pwdRegistry.pop();
+  pwdRegistry.pop();
+  return;
 };
 
 const cd = function (args) {
@@ -220,7 +222,7 @@ const cd = function (args) {
 
 const ls = function () {
   const contents = getFileSystemContents();
-  console.log(contents);
+  return contents;
 };
 
 const create = function (folderName, isFolder) {
@@ -234,6 +236,7 @@ const mkdir = function (args) {
     const folderName = args[index];
     currentDirectory.push(create(folderName, true));
   }
+  return;
 };
 
 const rm = function (args) {
@@ -243,14 +246,15 @@ const rm = function (args) {
     const elementIndex = findFolderIndex(element);
     currentDirectory.splice(elementIndex, 1);
   }
+  return;
 };
 
 const pwd = function () {
-  console.log(yellow(generatePwd()));
+  return yellow(generatePwd());
 };
 
 const echo = function (args) {
-  console.log(args.join(" "));
+  return args.join(" ");
 };
 
 const touch = function (args) {
@@ -284,11 +288,13 @@ const write = function (contents, fileIndex) {
   const currentDirectory = getCurrentFileSystem();
   currentDirectory[fileIndex][1].splice(0);
   currentDirectory[fileIndex][1][0] = contents;
+  return;
 };
 
 const append = function (contents, fileIndex) {
   const currentDirectory = getCurrentFileSystem();
   currentDirectory[fileIndex][1].push(contents);
+  return;
 };
 
 const writeToFile = function (fileName, isAppendMode = false) {
@@ -322,28 +328,47 @@ const cat = function (args) {
   }
 
   const contents = currentDirectory[fileIndex][1].join("\n");
-  console.log(contents);
+  return contents;
 };
 
-const exit = function() {
-  return "exit";
-}
+const exit = function () {
+  shouldRun = false;
+  return;
+};
 
-const showFs = function() {
+const showFs = function () {
   const currentDirectory = getCurrentFileSystem();
-  console.log(currentDirectory);
-}
+  return currentDirectory;
+};
 
-const changePromptColor = function(args) {
+const changePromptColor = function (args) {
   if (args[0] !== undefined) {
     fontColorCode = args[0] === "no-color" ? 7 : parseInt(args[0]);
   }
   if (args[1] !== undefined) {
-    backgroundColorCode = args[1] === "no-color" ? undefined : parseInt(args[1]);
+    backgroundColorCode = args[1] === "no-color"
+      ? undefined
+      : parseInt(args[1]);
   }
-}
+  return;
+};
 
-const functions = [cd, ls, clear, clear, mkdir, rm, pwd, echo, touch, cat, help, exit, showFs, changePromptColor];
+const functions = [
+  cd,
+  ls,
+  clear,
+  clear,
+  mkdir,
+  rm,
+  pwd,
+  echo,
+  touch,
+  cat,
+  help,
+  exit,
+  showFs,
+  changePromptColor,
+];
 const functionsRegistery = [
   "cd",
   "ls",
@@ -358,12 +383,14 @@ const functionsRegistery = [
   "help",
   "exit",
   "showFs",
-  "change"
+  "change",
 ];
 
 const changeBackground = function (message) {
-  return backgroundColorCode === undefined ? message : customBg(message, backgroundColorCode);
-}
+  return backgroundColorCode === undefined
+    ? message
+    : customBg(message, backgroundColorCode);
+};
 
 const userInput = function (path) {
   const message = bold(custom("~ \u{E0A0} " + path, fontColorCode));
@@ -390,6 +417,13 @@ const executeCommand = function (commandInfo) {
   return command(commandInfo.slice(1));
 };
 
+const redirect = function(output, destination) {
+  if (output === undefined) {
+    return;
+  }
+  console.log(output);
+}
+
 const printBanner = function () {
   console.log(green(bold(`
   ───────────────────────────────────────────
@@ -404,11 +438,11 @@ const printBanner = function () {
 const start = function () {
   clear();
   printBanner();
-  let shouldRun = true;
   while (shouldRun) {
     const pwd = generatePwd();
     const commandInfo = userInput(pwd);
-    shouldRun = executeCommand(commandInfo) !== "exit";
+    const output = executeCommand(commandInfo);
+    redirect(output);
   }
 };
 
