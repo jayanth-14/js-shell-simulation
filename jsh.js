@@ -61,6 +61,10 @@ const addInitialDirectories = () => {
   addToContents(currentDirectory, createDirectory("Desktop", currentDirectory));
   addToContents(currentDirectory, createDirectory("Pictures", currentDirectory));
 };
+const contents = directory => directory[1];
+const directoryIncludes = (fileSystem, directoryName) => {
+  console.log(directoryName, fileSystem);
+  return contents(fileSystem)?.some((d) => d[0] === directoryName)};
 const help = function () {
   const table = `
 --------------------------------------------------------------------------------------------------------
@@ -81,16 +85,15 @@ const help = function () {
   console.log(table);
 };
 
-const generatePwd = function () {
-  const folders = [];
-  let currentFileSystem = rootFileSystem;
-  for (let index = 0; index < pwdRegistry.length; index++) {
-    const currentFolderIndex = pwdRegistry[index];
-    const currentDirectory = currentFileSystem[currentFolderIndex];
-    folders.push(currentDirectory[0]);
-    currentFileSystem = currentDirectory[1];
-  }
-  return folders.join("");
+const generatePwd = (currentFileSystem = currentDirectory) =>{
+  // let currentFileSystem = currentDirectory;
+  // for (let index = 0; index < pwdRegistry.length; index++) {
+  //   const currentFolderIndex = pwdRegistry[index];
+  //   const directory = currentFileSystem[currentFolderIndex];
+  //   folders.push(directory[0]);
+  //   currentFileSystem = directory[1];
+  // }
+  return currentFileSystem[0] + "/" + directoryIncludes(currentFileSystem, "..") ? generatePwd(currentFileSystem[1]) : "";
 };
 
 const getCurrentFileSystem = function () {
@@ -397,8 +400,9 @@ const printBanner = function () {
 };
 
 const start = function () {
-  // clear();
-  // printBanner();
+  addInitialDirectories();
+  clear();
+  printBanner();
   // while (shouldRun) {
   //   const pwd = generatePwd();
   //   const commandString = userInput(pwd);
@@ -408,15 +412,9 @@ const start = function () {
   //   const isWriteMode = redirectionSymbol === ">>";
   //   redirect(output, commandData[1], isWriteMode);
   // }
-  addInitialDirectories();
-  console.log("rootFileSystem : ", rootFileSystem);
-  console.log("CurrentDirectory : ", currentDirectory);
-  prompt();
+  console.log(generatePwd());
   currentDirectory = currentDirectory[1][0];
-  console.log("CurrentDirectory : ", currentDirectory);
-  prompt();
-  currentDirectory = currentDirectory[1][1][1];
-  console.log("CurrentDirectory : ", currentDirectory);
+  console.log(generatePwd());
 };
 
 start();
