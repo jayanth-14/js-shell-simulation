@@ -64,7 +64,7 @@ const clear = function () {
 };
 
 const displayError = function (message) {
-  console.log(red(message));
+  return red(message);
 };
 
 // shell logic starts here
@@ -297,8 +297,7 @@ const append = function (contents, fileIndex) {
   return;
 };
 
-const writeToFile = function (fileName, isAppendMode = false) {
-  const contents = textEditor();
+const writeToFile = function (contents, fileName, isAppendMode = false) {
   let fileIndex = findFolderIndex(fileName);
   if (fileIndex === -1) {
     touch([fileName]);
@@ -314,16 +313,15 @@ const cat = function (args) {
   const currentDirectory = getCurrentFileSystem();
   let fileName = args[0];
 
-  if (fileName.includes(">")) {
-    return writeToFile(args[1], fileName === ">>");
-  }
-
   const fileIndex = findFolderIndex(fileName);
   const fileNotFound = fileIndex === -1;
-  if (fileNotFound || isFolder(fileIndex)) {
-    const errorMessage = fileNotFound
-      ? "jsh: cat: " + fileName + " : No such file or directory"
-      : "jsh: cat: " + fileName + " : Is a directory";
+  if (fileNotFound) {
+    const contents = textEditor();
+    return contents;
+  }
+
+  if (isFolder(fileIndex)) {
+    const errorMessage = "jsh: cat: " + fileName + " : Is a directory";
     return displayError(errorMessage);
   }
 
@@ -395,7 +393,7 @@ const changeBackground = function (message) {
 const userInput = function (path) {
   const message = bold(custom("~ \u{E0A0} " + path, fontColorCode));
   const customizedMessage = changeBackground(message);
-  return prompt(customizedMessage).trim().split(" ");
+  return prompt(customizedMessage).trim();
 };
 
 const getCommandReference = function (commandName) {
@@ -417,11 +415,27 @@ const executeCommand = function (commandInfo) {
   return command(commandInfo.slice(1));
 };
 
-const redirect = function(output, destination) {
+const redirectToFile = function (output, destination, isWriteMode) {
+  if (isWriteMode) {
+    writeToFile(output, destination, false);
+    return;
+  }
+  writeToFile(output, destination, true);
+}
+
+const redirect = function(output, destination, isWriteMode) {
   if (output === undefined) {
     return;
   }
-  console.log(output);
+  if (destination === undefined) {
+    console.log(output);
+    return;
+  }
+  redirectToFile(output, destination.trim(), isWriteMode);
+}
+
+const redirectSymbol = function(commandString) {
+  return commandString.includes(">>") ? ">>" : ">";
 }
 
 const printBanner = function () {
@@ -440,9 +454,12 @@ const start = function () {
   printBanner();
   while (shouldRun) {
     const pwd = generatePwd();
-    const commandInfo = userInput(pwd);
-    const output = executeCommand(commandInfo);
-    redirect(output);
+    const commandString = userInput(pwd);
+    const redirectionSymbol = redirectSymbol(commandString);
+    const commandData = commandString.split(redirectionSymbol);
+    const output = executeCommand(commandData[0].split(" "));
+    const isWriteMode = redirectionSymbol === ">>";
+    redirect(output, commandData[1], isWriteMode);
   }
 };
 
