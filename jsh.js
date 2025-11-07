@@ -71,15 +71,16 @@ const addSymbols = folder => "./" + folder[0] + (isAFolder(folder) ? "/" : "");
 const convertFolders = folders => folders.map(addSymbols);
 const colorizeFolder = folder => folder.endsWith("/") ? blue(folder) : cyan(folder);
 const colorizeFolders = folders => folders.map(colorizeFolder);
-//==============================Utilities For Commands=========================
-//==============================Commandds==============================
-const pwd = (directory = currentDirectory) => {
+const generatePath = (directory = currentDirectory) => {
   const parentReferenceIndex = indexOf("..", directory);
   if (parentReferenceIndex === -1) {
     return "root";
   }
-  return pwd(contents(directory)[parentReferenceIndex][1]) + "/" + directory[0];
+  return generatePath(contents(directory)[parentReferenceIndex][1]) + "/" + directory[0];
 }
+//==============================Utilities For Commands=========================
+//==============================Commandds==============================
+const pwd = () => generatePath(currentDirectory);
 
 const cd = (destination) => {
   const folderIndex = indexOf(destination[0],currentDirectory);
