@@ -1,4 +1,4 @@
-let rootFileSystem = ["root/", []];
+const rootFileSystem = ["root/", []];
 let currentDirectory = rootFileSystem;
 
 const directorySkeleton = name => {
