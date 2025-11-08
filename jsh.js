@@ -48,12 +48,16 @@ const addInitialDirectories = () => {
 };
 
 const contents = directory => directory[1];
+
 const directoryName = directory => directory[0];
+
+const isFolder = (name, file) => name === directoryName(file);
+
 const indexOf = (name, directory) => {
   const allFiles = contents(directory);
   for (let index = 0; index < allFiles.length; index++) {
     const file = allFiles[index];
-    if (name === directoryName(file)) {
+    if (isFolder(name, file)) {
       return index;
     }
   }
@@ -78,6 +82,8 @@ const generatePath = (directory = currentDirectory) => {
   }
   return generatePath(contents(directory)[parentReferenceIndex][1]) + "/" + directory[0];
 }
+const getReference = (name, index, directory) => 
+  isReferenceType(name) ? directory[1][index][1] : directory[1][index];
 
 const getDirectory = (destination = ["."]) => {
   const destinations = destination[0].split("/");
@@ -87,11 +93,7 @@ const getDirectory = (destination = ["."]) => {
     if (folderIndex === -1) {
       return [];
     }
-    if (isReferenceType(folderName)) {
-      directory = directory[1][folderIndex][1];
-      continue;
-    }
-    directory = directory[1][folderIndex];
+    directory = getReference(folderName, folderIndex, directory);
   }
   return directory;
 }
@@ -108,6 +110,7 @@ const cd = (destination) => {
   }
   currentDirectory = directory;
 }
+
 const ls = function (destination) {
   const directory = getDirectory(getDestination(destination));
   const directoryContents = contents(directory);
