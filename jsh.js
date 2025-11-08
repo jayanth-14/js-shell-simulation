@@ -78,6 +78,23 @@ const generatePath = (directory = currentDirectory) => {
   }
   return generatePath(contents(directory)[parentReferenceIndex][1]) + "/" + directory[0];
 }
+
+const getDirectory = (destination = ["."]) => {
+  const destinations = destination[0].split("/");
+  let directory  = currentDirectory;
+  for (const folderName of destinations) {
+    const folderIndex = indexOf(folderName, directory);
+    if (folderIndex === -1) {
+      return [];
+    }
+    if (isReferenceType(folderName)) {
+      directory = directory[1][folderIndex][1];
+      continue;
+    }
+    directory = directory[1][folderIndex];
+  }
+  return directory;
+}
 //==============================Utilities For Commands=========================
 //==============================Commandds==============================
 const pwd = () => generatePath(currentDirectory);
@@ -100,6 +117,9 @@ const ls = function () {
   const colored = colorizeFolders(folders);
   return colored.join("\t");
 };
+// const mkdir = function (folders) => {
+
+// }
 //==============================Commandds==============================
 let shouldRun = true;
 let fontColorCode = 214;
