@@ -46,7 +46,7 @@ const addInitialDirectories = () => {
   addToContents(currentDirectory, createDirectory("Desktop", currentDirectory));
   addToContents(currentDirectory, createDirectory("Pictures", currentDirectory));
   touch(["index.js"]);
-  write("hello world", "index.js");
+  append("hello world", "index.js");
 };
 
 const contents = directory => directory[1];
@@ -87,7 +87,7 @@ const generatePath = (directory = currentDirectory) => {
 const getReference = (name, index, directory) => 
   isReferenceType(name) ? directory[1][index][1] : directory[1][index];
 
-const getDirectory = (destination = ["."]) => {
+const getDirectory = (destination) => {
   const destinations = destination[0].split("/");
   let directory  = currentDirectory;
   for (const folderName of destinations) {
@@ -121,9 +121,24 @@ const createFile = fileDesination => {
   const file = directorySkeleton(name);
   addToContents(parentDirectory, file);
 }
-const write = (content, fileLocation) => {
+const append = (content, fileLocation) => {
   const file = getDirectory([fileLocation]);
   file[1].push(content);
+}
+const write = (content, fileLocation) => {
+  const file = getDirectory([fileLocation]);
+  file[1].splice(0);
+  file[1].push(content);
+}
+const writeToFile = (content, fileLocation, isWriteMode) => {
+  if (!exists(fileLocation)) {
+    touch([fileLocation]);
+  }
+  if (isWriteMode) {
+    write(content, fileLocation);
+    return;
+  }
+  append(content, fileLocation);
 }
 const fileEditor = () => {
   const text = [];
@@ -264,11 +279,7 @@ const executeCommand = function (commandInfo) {
 };
 
 const redirectToFile = function (output, destination, isWriteMode) {
-  if (isWriteMode) {
-    writeToFile(output, destination, false);
-    return;
-  }
-  writeToFile(output, destination, true);
+  writeToFile(output, destination, isWriteMode);
 };
 
 const redirect = function (output, destination, isWriteMode) {
@@ -282,9 +293,8 @@ const redirect = function (output, destination, isWriteMode) {
   redirectToFile(output, destination.trim(), isWriteMode);
 };
 
-const redirectSymbol = function (commandString) {
-  return commandString.includes(">>") ? ">>" : ">";
-};
+const redirectSymbol = commandString =>
+  commandString.includes(">>") ? ">>" : ">";
 
 const printBanner = function () {
   console.log(green(bold(`
@@ -306,8 +316,8 @@ const start = function () {
     const commandString = userInput(pwdValue);
     const redirectionSymbol = redirectSymbol(commandString);
     const commandData = commandString.split(redirectionSymbol);
-    const output = executeCommand(commandData[0].split(" "));
-    const isWriteMode = redirectionSymbol === ">>";
+    const output = executeCommand(commandData[0].trim().split(" "));
+    const isWriteMode = redirectionSymbol === ">";
     redirect(output, commandData[1], isWriteMode);
   }
   // console.log(ls().join("\t"));
