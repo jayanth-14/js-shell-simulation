@@ -129,19 +129,19 @@ const ls = function (destination) {
 const mkdir =  folders => {
   folders.forEach(makeDir);
 }
-//==============================Commandds==============================
-let shouldRun = true;
-let fontColorCode = 214;
-let backgroundColorCode = undefined;
-
 const exit = function () {
   shouldRun = false;
   return;
 };
 
-const showFs = function () {
-  return currentDirectory;
-};
+const showFs = () => currentDirectory;
+
+const echo = args => args.join(" ");
+//==============================Commandds==============================
+let shouldRun = true;
+let fontColorCode = 214;
+let backgroundColorCode = undefined;
+
 
 const changePromptColor = function (args) {
   if (args[0] !== undefined) {
@@ -162,6 +162,7 @@ const functions = [
   clear,
   clear,
   pwd,
+  echo,
   exit,
   showFs,
   changePromptColor,
@@ -173,6 +174,7 @@ const functionsRegistery = [
   "clear",
   "cls",
   "pwd",
+  "echo",
   "exit",
   "showFs",
   "change",
