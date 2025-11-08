@@ -197,7 +197,13 @@ const echo = args => args.join(" ");
 const touch = args => args.forEach(createFile);
 const cat = args => {
   const fileDesination = args[0];
+  if (fileDesination === undefined) {
+    return fileEditor();
+  }
   const file = getDirectory([fileDesination]);
+  if (file.length === 0) {
+    return displayError("jsh - cat : " + fileDesination + " is not available");
+  }
   const contents = file[1];
   return contents.join("\n");
 }
