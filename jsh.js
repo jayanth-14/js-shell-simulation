@@ -22,6 +22,7 @@ const directorySkeleton = name => {
 const referenceSkeleton = (name, reference) => [name, reference];
 const createSelfReference = directory => directory[1].push(referenceSkeleton(".", directory));
 const addToContents = (parentDirectory, childDirectory) => parentDirectory[1].push(childDirectory);
+const removeFromContents = (parentDirectory, childDirectoryIndex) => parentDirectory[1].splice(childDirectoryIndex, 1);
 const createReferences = (directory, parent) => {
   const selfReference = referenceSkeleton(".", directory);
   const parentReference = referenceSkeleton("..", parent);
@@ -112,6 +113,16 @@ const makeDir = dir => {
   const parentDirectory = getDirectory(getDestination(parentDestination));
   addToContents(parentDirectory, createDirectory(name, parentDirectory));
 }
+const removeDir = dir => {
+  if (!exists(dir)) {
+    return console.log(displayError("jsh - rmdir : " + dir + " doesn't exists"));
+  }
+  const path = ("./" + dir).split("/");
+  const name = path[path.length - 1];
+  const parentDestination = path.slice(0, -1);
+  const parentDirectory = getDirectory(parentDestination);
+  removeFromContents(parentDirectory, indexOf(name, parentDirectory));
+}
 const generatePwd = () => generatePath(currentDirectory);
 const createFile = fileDesination => {
   const path = fileDesination.split("/");
@@ -183,9 +194,8 @@ const ls = function (destination) {
   const colored = colorizeFolders(folders);
   return colored.join("\t");
 };
-const mkdir =  folders => {
-  folders.forEach(makeDir);
-}
+const mkdir =  folders => folders.forEach(makeDir);
+const rmdir = folders => folders.forEach(removeDir);
 const exit = function () {
   shouldRun = false;
   return;
@@ -229,6 +239,7 @@ const functions = [
   cd,
   ls,
   mkdir,
+  rmdir,
   clear,
   clear,
   pwd,
@@ -243,6 +254,7 @@ const functionsRegistery = [
   "cd",
   "ls",
   "mkdir",
+  "rmdir",
   "clear",
   "cls",
   "pwd",
