@@ -45,6 +45,8 @@ const addInitialDirectories = () => {
   addToContents(currentDirectory, createDirectory("Downloads", currentDirectory));
   addToContents(currentDirectory, createDirectory("Desktop", currentDirectory));
   addToContents(currentDirectory, createDirectory("Pictures", currentDirectory));
+  touch(["index.js"]);
+  write("hello world", "index.js");
 };
 
 const contents = directory => directory[1];
@@ -119,6 +121,28 @@ const createFile = fileDesination => {
   const file = directorySkeleton(name);
   addToContents(parentDirectory, file);
 }
+const write = (content, fileLocation) => {
+  const file = getDirectory([fileLocation]);
+  file[1].push(content);
+}
+const fileEditor = () => {
+  const text = [];
+  console.log(
+    yellow(
+      `Enter your text below. Type ${
+        bold(":wq") + yellow(" to save and exit.")
+      }`,
+    ),
+  );
+  while (true) {
+    const line = prompt("");
+    if (line.endsWith(":wq")) {
+      text.push(line.slice(0, line.length - 3));
+      return text.join("\n");
+    }
+    text.push(line);
+  }
+}
 //==============================Utilities For Commands=========================
 //==============================Commandds==============================
 const pwd = () => yellow(generatePwd());
@@ -156,6 +180,12 @@ const showFs = () => currentDirectory;
 
 const echo = args => args.join(" ");
 const touch = args => args.forEach(createFile);
+const cat = args => {
+  const fileDesination = args[0];
+  const file = getDirectory([fileDesination]);
+  const contents = file[1];
+  return contents.join("\n");
+}
 //==============================Commandds==============================
 let shouldRun = true;
 let fontColorCode = 214;
@@ -183,6 +213,7 @@ const functions = [
   pwd,
   echo,
   touch,
+  cat,
   exit,
   showFs,
   changePromptColor,
@@ -196,6 +227,7 @@ const functionsRegistery = [
   "pwd",
   "echo",
   "touch",
+  "cat",
   "exit",
   "showFs",
   "change",
