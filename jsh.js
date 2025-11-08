@@ -241,36 +241,21 @@ const changePromptColor = function (args) {
   return;
 };
 
-const functions = [
-  cd,
-  ls,
-  mkdir,
-  rmdir,
-  clear,
-  clear,
-  pwd,
-  echo,
-  touch,
-  cat,
-  exit,
-  showFs,
-  changePromptColor,
-];
-const functionsRegistry = [
-  "cd",
-  "ls",
-  "mkdir",
-  "rmdir",
-  "clear",
-  "cls",
-  "pwd",
-  "echo",
-  "touch",
-  "cat",
-  "exit",
-  "showFs",
-  "change",
-];
+const commandRegistry = [
+  ["cd", cd],
+  ["ls", ls],
+  ["mkdir", mkdir],
+  ["rmdir", rmdir],
+  ["clear", clear],
+  ["cls", clear],
+  ["pwd", pwd],
+  ["echo", echo],
+  ["touch", touch],
+  ["cat", cat],
+  ["exit", exit],
+  ["showFs", showFs],
+  ["change", changePromptColor],
+]
 
 const changeBackground = function (message) {
   return backgroundColorCode === undefined
@@ -285,9 +270,9 @@ const userInput = function (path) {
 };
 
 const getCommandReference = function (commandName) {
-  for (let index = 0; index < functionsRegistry.length; index++) {
-    if (functionsRegistry[index] === commandName) {
-      return functions[index];
+  for (let index = 0; index < commandRegistry.length; index++) {
+    if (commandRegistry[index][0] === commandName) {
+      return commandRegistry[index][1];
     }
   }
   return;
