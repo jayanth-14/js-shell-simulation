@@ -107,6 +107,14 @@ const makeDir = dir => {
   addToContents(parentDirectory, createDirectory(name, parentDirectory));
 }
 const generatePwd = () => generatePath(currentDirectory);
+const createFile = fileDesination => {
+  const path = fileDesination.split("/");
+  const name = path[path.length - 1];
+  const parentDestination = path.slice(0, -1);
+  const parentDirectory = getDirectory(getDestination(parentDestination));
+  const file = directorySkeleton(name);
+  addToContents(parentDirectory, file);
+}
 //==============================Utilities For Commands=========================
 //==============================Commandds==============================
 const pwd = () => yellow(generatePwd());
@@ -137,6 +145,7 @@ const exit = function () {
 const showFs = () => currentDirectory;
 
 const echo = args => args.join(" ");
+const touch = args => args.forEach(createFile);
 //==============================Commandds==============================
 let shouldRun = true;
 let fontColorCode = 214;
@@ -163,6 +172,7 @@ const functions = [
   clear,
   pwd,
   echo,
+  touch,
   exit,
   showFs,
   changePromptColor,
@@ -175,6 +185,7 @@ const functionsRegistery = [
   "cls",
   "pwd",
   "echo",
+  "touch",
   "exit",
   "showFs",
   "change",
