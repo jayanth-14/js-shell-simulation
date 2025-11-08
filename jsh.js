@@ -272,7 +272,7 @@ const getCommandReference = function (commandName) {
       return functions[index];
     }
   }
-  return displayError("jsh: command not found: " + commandName);
+  return;
 };
 
 const executeCommand = function (commandInfo) {
@@ -281,6 +281,9 @@ const executeCommand = function (commandInfo) {
     return;
   }
   const command = getCommandReference(commandName);
+  if (command === undefined) {
+    return displayError("jsh: command not found: " + commandName);
+  }
   return command(commandInfo.slice(1));
 };
 
