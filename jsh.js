@@ -106,10 +106,10 @@ const makeDir = dir => {
   const parentDirectory = getDirectory(getDestination(parentDestination));
   addToContents(parentDirectory, createDirectory(name, parentDirectory));
 }
+const generatePwd = () => generatePath(currentDirectory);
 //==============================Utilities For Commands=========================
 //==============================Commandds==============================
-const pwd = () => generatePath(currentDirectory);
-
+const pwd = () => yellow(generatePwd());
 const cd = (destination) => {
   const directory = getDirectory(getDestination(destination));
   if (directory.length === 0) {
@@ -247,7 +247,7 @@ const start = function () {
   clear();
   printBanner();
   while (shouldRun) {
-    const pwdValue = pwd();
+    const pwdValue = generatePwd();
     const commandString = userInput(pwdValue);
     const redirectionSymbol = redirectSymbol(commandString);
     const commandData = commandString.split(redirectionSymbol);
