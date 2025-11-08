@@ -95,19 +95,22 @@ const getDirectory = (destination = ["."]) => {
   }
   return directory;
 }
+const validateDestination = destination => destination.length !== 0;
+const getDestination = destination => validateDestination(destination) ? destination : ["."];
 //==============================Utilities For Commands=========================
 //==============================Commandds==============================
 const pwd = () => generatePath(currentDirectory);
 
 const cd = (destination) => {
-  const directory = getDirectory(destination);
+  const directory = getDirectory(getDestination(destination));
   if (directory.length === 0) {
     return displayError("jsh - cd : Couldn't find the folder : " + destination);
   }
   currentDirectory = directory;
 }
-const ls = function () {
-  const directoryContents = contents(currentDirectory);
+const ls = function (destination) {
+  const directory = getDirectory(getDestination(destination));
+  const directoryContents = contents(directory);
   const filtered = removeHiden(directoryContents);
   const folders = convertFolders(filtered);
   const colored = colorizeFolders(folders);
