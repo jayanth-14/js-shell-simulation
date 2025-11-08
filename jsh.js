@@ -99,6 +99,13 @@ const getDirectory = (destination = ["."]) => {
 }
 const validateDestination = destination => destination.length !== 0;
 const getDestination = destination => validateDestination(destination) ? destination : ["."];
+const makeDir = dir => {
+  const path = dir.split("/");
+  const name = path[path.length - 1];
+  const parentDestination = path.slice(0, -1);
+  const parentDirectory = getDirectory(getDestination(parentDestination));
+  addToContents(parentDirectory, createDirectory(name, parentDirectory));
+}
 //==============================Utilities For Commands=========================
 //==============================Commandds==============================
 const pwd = () => generatePath(currentDirectory);
@@ -119,9 +126,9 @@ const ls = function (destination) {
   const colored = colorizeFolders(folders);
   return colored.join("\t");
 };
-// const mkdir = function (folders) => {
-
-// }
+const mkdir =  folders => {
+  folders.forEach(makeDir);
+}
 //==============================Commandds==============================
 let shouldRun = true;
 let fontColorCode = 214;
@@ -151,6 +158,7 @@ const changePromptColor = function (args) {
 const functions = [
   cd,
   ls,
+  mkdir,
   clear,
   clear,
   pwd,
@@ -161,6 +169,7 @@ const functions = [
 const functionsRegistery = [
   "cd",
   "ls",
+  "mkdir",
   "clear",
   "cls",
   "pwd",
