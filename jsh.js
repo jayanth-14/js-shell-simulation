@@ -123,11 +123,17 @@ const cd = (destination) => {
   if (directory.length === 0) {
     return displayError("jsh - cd : Couldn't find the folder : " + destination);
   }
+  if (!includes(".", directory)) {
+    return displayError("jsh - cd : " + destination + " is not a directory.");
+  }
   currentDirectory = directory;
 }
 
 const ls = function (destination) {
   const directory = getDirectory(getDestination(destination));
+  if (!includes(".", directory)) {
+    return displayError("jsh - cd : " + destination + " is not a directory.");
+  }
   const directoryContents = contents(directory);
   const filtered = removeHiden(directoryContents);
   const folders = convertFolders(filtered);
