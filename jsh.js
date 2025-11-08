@@ -129,8 +129,8 @@ const removeDir = dir => {
   removeFromContents(parentDirectory, indexOf(name, parentDirectory));
 }
 const generatePwd = () => generatePath(currentDirectory);
-const createFile = fileDesination => {
-  const path = fileDesination.split("/");
+const createFile = fileDestination => {
+  const path = fileDestination.split("/");
   const name = path[path.length - 1];
   const parentDestination = path.slice(0, -1);
   const parentDirectory = getDirectory(getDestination(parentDestination));
@@ -175,7 +175,7 @@ const fileEditor = () => {
   }
 }
 //==============================Utilities For Commands=========================
-//==============================Commandds==============================
+//==============================Commands==============================
 const pwd = () => yellow(generatePwd());
 const cd = (destination) => {
   const directory = getDirectory(getDestination(destination));
@@ -211,18 +211,18 @@ const showFs = () => currentDirectory;
 const echo = args => args.join(" ");
 const touch = args => args.forEach(createFile);
 const cat = args => {
-  const fileDesination = args[0];
-  if (fileDesination === undefined) {
+  const fileDestination = args[0];
+  if (fileDestination === undefined) {
     return fileEditor();
   }
-  const file = getDirectory([fileDesination]);
+  const file = getDirectory([fileDestination]);
   if (file.length === 0) {
-    return displayError("jsh - cat : " + fileDesination + " is not available");
+    return displayError("jsh - cat : " + fileDestination + " is not available");
   }
   const contents = file[1];
   return contents.join("\n");
 }
-//==============================Commandds==============================
+//==============================Commands==============================
 let shouldRun = true;
 let fontColorCode = 214;
 let backgroundColorCode = undefined;
@@ -255,7 +255,7 @@ const functions = [
   showFs,
   changePromptColor,
 ];
-const functionsRegistery = [
+const functionsRegistry = [
   "cd",
   "ls",
   "mkdir",
@@ -284,8 +284,8 @@ const userInput = function (path) {
 };
 
 const getCommandReference = function (commandName) {
-  for (let index = 0; index < functionsRegistery.length; index++) {
-    if (functionsRegistery[index] === commandName) {
+  for (let index = 0; index < functionsRegistry.length; index++) {
+    if (functionsRegistry[index] === commandName) {
       return functions[index];
     }
   }
