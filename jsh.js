@@ -67,6 +67,7 @@ const indexOf = (name, directory) => {
   return -1;
 }
 
+
 const includes = (folderName, parent) => indexOf(folderName, parent) !== -1;
 const isAFolder = folder => includes(".", folder);
 const isReferenceType = folderName => folderName === "." || folderName === "..";
