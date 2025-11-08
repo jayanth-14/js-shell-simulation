@@ -117,6 +117,9 @@ const removeDir = dir => {
   if (!exists(dir)) {
     return console.log(displayError("jsh - rmdir : " + dir + " doesn't exists"));
   }
+  if (!isAFolder(getDirectory([dir]))) {
+    return console.log(displayError("jsh - rmdir : " + dir + " is not a folder"));
+  }
   const path = ("./" + dir).split("/");
   const name = path[path.length - 1];
   const parentDestination = path.slice(0, -1);
