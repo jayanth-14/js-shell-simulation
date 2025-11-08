@@ -10,6 +10,7 @@ const custom = (text, code) => "\x1B[38;5;" + code + "m" + text + "\x1B[0m";
 const customBg = (text, code) => "\x1B[48;5;" + code + "m" + text + "\x1B[0m";
 const clear = () => console.clear();
 const displayError = (message) => red(message);
+const jshError = (cmd, msg) => red(`jsh : ${cmd} : ${msg}`);
 //==============================Display Utilities==============================
 //==============================File System==============================
 const rootFileSystem = ["root/", []];
@@ -117,10 +118,10 @@ const makeDir = dir => {
 }
 const removeDir = dir => {
   if (!exists(dir)) {
-    return console.log(displayError("jsh - rmdir : " + dir + " doesn't exists"));
+    return console.log(jshError("rmdir", dir + " doesn't exists"));
   }
   if (!isAFolder(getDirectory([dir]))) {
-    return console.log(displayError("jsh - rmdir : " + dir + " is not a folder"));
+    return console.log(jshError("rmdir", dir + " is not a folder"));
   }
   const path = ("./" + dir).split("/");
   const name = path[path.length - 1];
@@ -180,10 +181,10 @@ const pwd = () => yellow(generatePwd());
 const cd = (destination) => {
   const directory = getDirectory(getDestination(destination));
   if (directory.length === 0) {
-    return displayError("jsh - cd : Couldn't find the folder : " + destination);
+    return jshError("cd", "Couldn't find the folder : " + destination);
   }
   if (!includes(".", directory)) {
-    return displayError("jsh - cd : " + destination + " is not a directory.");
+    return jshError("cd", destination + " is not a directory.");
   }
   currentDirectory = directory;
 }
@@ -191,7 +192,7 @@ const cd = (destination) => {
 const ls = function (destination) {
   const directory = getDirectory(getDestination(destination));
   if (!includes(".", directory)) {
-    return displayError("jsh - cd : " + destination + " is not a directory.");
+    return jshError("cd", destination + " is not a directory.");
   }
   const directoryContents = contents(directory);
   const filtered = removeHidden(directoryContents);
@@ -217,7 +218,7 @@ const cat = args => {
   }
   const file = getDirectory([fileDestination]);
   if (file.length === 0) {
-    return displayError("jsh - cat : " + fileDestination + " is not available");
+    return jshError("cat", fileDestination + " is not available");
   }
   const contents = file[1];
   return contents.join("\n");
@@ -299,7 +300,7 @@ const executeCommand = function (commandInfo) {
   }
   const command = getCommandReference(commandName);
   if (command === undefined) {
-    return displayError("jsh: command not found: " + commandName);
+    return jshError("command not found",  commandName);
   }
   return command(commandInfo.slice(1));
 };
