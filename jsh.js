@@ -54,13 +54,13 @@ const contents = directory => directory[1];
 
 const directoryName = directory => directory[0];
 
-const isFolder = (name, file) => name === directoryName(file);
+const folderFound = (name, file) => name === directoryName(file);
 
 const indexOf = (name, directory) => {
   const allFiles = contents(directory);
   for (let index = 0; index < allFiles.length; index++) {
     const file = allFiles[index];
-    if (isFolder(name, file)) {
+    if (folderFound(name, file)) {
       return index;
     }
   }
@@ -72,9 +72,10 @@ const isAFolder = folder => includes(".", folder);
 const isReferenceType = folderName => folderName === "." || folderName === "..";
 //==============================File System==============================
 //==============================Utilities For Commands=========================
-const isNotAHiden = folder => !folder[0].startsWith(".");
-const removeHiden = folders => folders.filter(isNotAHiden);
-const addSymbols = folder => "./" + folder[0] + (isAFolder(folder) ? "/" : "");
+const isNotAHidden = folder => !folder[0].startsWith(".");
+const removeHidden = folders => folders.filter(isNotAHidden);
+const format = folder => isAFolder(folder) ? "/" : "";
+const addSymbols = folder => "./" + folder[0] + format(folder);
 const convertFolders = folders => folders.map(addSymbols);
 const colorizeFolder = folder => folder.endsWith("/") ? blue(folder) : cyan(folder);
 const colorizeFolders = folders => folders.map(colorizeFolder);
@@ -107,9 +108,9 @@ const makeDir = dir => {
   if (exists(dir)) {
     return console.log(displayError(dir + " already exists"));
   }
-  const path = dir.split("/");
+  const path = ("./" + dir).split("/");
   const name = path[path.length - 1];
-  const parentDestination = path.slice(0, -1);
+  const parentDestination = [(path.slice(0, -1)).join("/")];
   const parentDirectory = getDirectory(getDestination(parentDestination));
   addToContents(parentDirectory, createDirectory(name, parentDirectory));
 }
@@ -192,7 +193,7 @@ const ls = function (destination) {
     return displayError("jsh - cd : " + destination + " is not a directory.");
   }
   const directoryContents = contents(directory);
-  const filtered = removeHiden(directoryContents);
+  const filtered = removeHidden(directoryContents);
   const folders = convertFolders(filtered);
   const colored = colorizeFolders(folders);
   return colored.join("\t");
