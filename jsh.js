@@ -100,15 +100,11 @@ const getDirectory = (destination = ["."]) => {
 const pwd = () => generatePath(currentDirectory);
 
 const cd = (destination) => {
-  const folderIndex = indexOf(destination[0],currentDirectory);
-  if (folderIndex === -1) {
-    return displayError("jsh - cd : Couldn't find the directory :", destination[0]);
+  const directory = getDirectory(destination);
+  if (directory.length === 0) {
+    return displayError("jsh - cd : Couldn't find the folder : " + destination);
   }
-  if (isReferenceType(destination[0])) {
-    currentDirectory = currentDirectory[1][folderIndex][1];
-    return;
-  }
-  currentDirectory = currentDirectory[1][folderIndex];
+  currentDirectory = directory;
 }
 const ls = function () {
   const directoryContents = contents(currentDirectory);
