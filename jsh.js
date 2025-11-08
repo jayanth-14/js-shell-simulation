@@ -99,7 +99,11 @@ const getDirectory = (destination = ["."]) => {
 }
 const validateDestination = destination => destination.length !== 0;
 const getDestination = destination => validateDestination(destination) ? destination : ["."];
+const exists = destination => getDirectory([destination]).length !== 0;
 const makeDir = dir => {
+  if (exists(dir)) {
+    return console.log(displayError(dir + " already exists"));
+  }
   const path = dir.split("/");
   const name = path[path.length - 1];
   const parentDestination = path.slice(0, -1);
