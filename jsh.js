@@ -193,15 +193,22 @@ const DOCS = [
   ["help", "0", "Show all available commands.", "help"],
   ["exit", "0", "Exit the JSH shell session.", "exit"],
 ];
+const removeHyphen = string => string.split().splice(string.indexOf("-"), 1);
 const separateFlags = commandData => commandData.reduce((filtered, currentData) => {
   if (currentData.includes("-")) {
-    const index = currentData.indexOf("-");
-    filtered[0].push(currentData.slice(index + 1));
+    filtered[0].push(removeHyphen(currentData));
     return filtered;
   }
   filtered[1].push(currentData);
   return filtered;
 }, [[],[]]);
+
+// Better readability but, more complexity - iterates over the array twice
+// const separateFlags = commandData => {
+//   const flags = commandData.filter(a => a.startsWith("-"));
+//   const values = commandData.filter(a => !a.startsWith("-"));
+//   return [flags, values];
+// }
 const increment = count => add(count, 1);
 const sizeOfFile = file => file[1].reduce((count, line) => count + line.length, 0);
 const sizeOfDirectory = directory => directory[1].reduce(increment, 0);
@@ -235,6 +242,16 @@ const cd = (destination) => {
   currentDirectory = directory;
 }
 
+const implementFlags = (data, flags) => {
+  let directoryContents = data.slice()
+  if (!flags.includes("a")) {
+    directoryContents = removeHidden(directoryContents);
+  }
+  if (flags.includes("r")) {
+    directoryContents = directoryContents.reverse();
+  }
+  return directoryContents;
+}
 const ls = function (commandData) {
   const filteredData = separateFlags(commandData);
   const destination = filteredData[1];
@@ -244,9 +261,7 @@ const ls = function (commandData) {
     return jshError("cd", destination + " is not a directory.");
   }
   let directoryContents = contents(directory);
-  if (!flags.includes("a")) {
-    directoryContents = removeHidden(directoryContents);
-  }
+  directoryContents = implementFlags(directoryContents, flags);
   if (flags.includes("l")) {
     return listInLongFormat(directoryContents);
   }
