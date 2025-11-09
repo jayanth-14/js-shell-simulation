@@ -62,6 +62,12 @@ const folderFound = (name, file) => name === directoryName(file);
 
 const indexOf = (name, directory) => {
   const allFiles = contents(directory);
+  // console.log("name", name);
+  // console.log("name", name);
+  // console.log("allFiles", allFiles);
+  if (allFiles === undefined) {
+    return -1;
+  }
   for (let index = 0; index < allFiles.length; index++) {
     const file = allFiles[index];
     if (folderFound(name, file)) {
@@ -79,6 +85,7 @@ const add = (x, y) => x + y;
 //==============================File System==============================
 //==============================Utilities For Commands=========================
 const isNotAHidden = folder => !folder[0].startsWith(".");
+const filterFolder = folders => folders.filter(isAFolder);
 const removeHidden = folders => folders.filter(isNotAHidden);
 const format = folder => isAFolder(folder) ? "/" : "";
 const addSymbols = folder => "./" + folder[0] + format(folder);
@@ -212,7 +219,7 @@ const separateFlags = commandData => commandData.reduce((filtered, currentData) 
 const increment = count => add(count, 1);
 const sizeOfFile = file => file[1].reduce((count, line) => count + line.length, 0);
 const sizeOfDirectory = directory => directory[1].reduce(increment, 0);
-const isLengthLarger = (s1, s2) => s1 < s2;
+const sortStrings = (s1, s2) => s1 < s2;
 const sort = (data, maxPredicate) => {
   const copy = data.slice();
   for (let outerIndex = 0; outerIndex < copy.length; outerIndex++) {
@@ -265,7 +272,7 @@ const implementFlags = (data, flags) => {
     directoryContents = directoryContents.reverse();
   }
   if (flags.includes("t")) {
-    directoryContents = sort(directoryContents, isLengthLarger);
+    directoryContents = sort(directoryContents, sortStrings);
   }
   return directoryContents;
 }
@@ -283,8 +290,16 @@ const ls = function (commandData) {
   if (flags.includes("l")) {
     return listInLongFormat(directoryContents) + numberOfItems;
   }
+  let recursiveData = "";
+  if (flags.includes("R")) {
+    filterFolder(removeHidden(directoryContents)).forEach(dir => {
+      const currentDestination = destination.length === 0 ? "." : destination;
+      const newDestination = currentDestination + "/" + dir[0];
+      recursiveData += "\n\n" + yellow(newDestination) + "\n" + ls([newDestination, "-" + flags])
+    })
+  }
   directoryContents = colorizeFolders(directoryContents);
-  return directoryContents.join("\t") + numberOfItems;
+  return directoryContents.join("\t") + numberOfItems + recursiveData;
 };
 const mkdir =  folders => folders.forEach(makeDir);
 const rmdir = folders => folders.forEach(removeDir);
