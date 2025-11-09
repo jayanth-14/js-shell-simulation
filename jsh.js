@@ -262,11 +262,12 @@ const ls = function (commandData) {
   }
   let directoryContents = contents(directory);
   directoryContents = implementFlags(directoryContents, flags);
+  const numberOfItems = flags.includes("s") ? `\ntotal :` + directoryContents.length : "";
   if (flags.includes("l")) {
-    return listInLongFormat(directoryContents);
+    return listInLongFormat(directoryContents) + numberOfItems;
   }
   directoryContents = colorizeFolders(directoryContents);
-  return directoryContents.join("\t");
+  return directoryContents.join("\t") + numberOfItems;
 };
 const mkdir =  folders => folders.forEach(makeDir);
 const rmdir = folders => folders.forEach(removeDir);
