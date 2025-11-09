@@ -192,7 +192,19 @@ const DOCS = [
   ["help", "0", "Show all available commands.", "help"],
   ["exit", "0", "Exit the JSH shell session.", "exit"],
 ];
+const separateFlags = commandData => commandData.reduce((filtered, currentData) => {
+  if (currentData.includes("-")) {
+    const index = currentData.indexOf("-");
+    filtered[0].push(currentData.slice(index + 1));
+    return filtered;
+  }
+  filtered[1].push(currentData);
+  return filtered;
+}, [[],[]]);
 //==============================Utilities For Commands=========================
+//==============================Sub Commands==============================
+// const listInLongFormat = data;
+//==============================Sub Commands==============================
 //==============================Commands==============================
 const pwd = () => yellow(generatePwd());
 const cd = (destination) => {
@@ -206,13 +218,19 @@ const cd = (destination) => {
   currentDirectory = directory;
 }
 
-const ls = function (destination) {
+const ls = function (commandData) {
+  const filteredData = separateFlags(commandData);
+  const destination = filteredData[1];
+  const flags = filteredData[0];
   const directory = getDirectory(getDestination(destination));
   if (!includes(".", directory)) {
     return jshError("cd", destination + " is not a directory.");
   }
   const directoryContents = contents(directory);
-  const filtered = removeHidden(directoryContents);
+  let filtered = directoryContents;
+  if (!flags.includes("a")) {
+    filtered = removeHidden(filtered);
+  }
   const folders = convertFolders(filtered);
   const colored = colorizeFolders(folders);
   return colored.join("\t");
