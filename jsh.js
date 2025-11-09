@@ -219,6 +219,7 @@ const listInLongFormat = data => {
       ? sizeOfDirectory(item) + " items"
       : item[1].join("").length + " chars";
     result.push(`${padColumn(type, 20)} ${padColumn(owner, 6)} ${padColumn(size, 10)} ${colorizeFolder(item)}`);
+    
   }
 
   return result.join("\n");
