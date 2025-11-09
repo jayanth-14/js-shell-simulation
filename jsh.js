@@ -75,6 +75,7 @@ const indexOf = (name, directory) => {
 const includes = (folderName, parent) => indexOf(folderName, parent) !== -1;
 const isAFolder = folder => includes(".", folder);
 const isReferenceType = folderName => folderName === "." || folderName === "..";
+const add = (x, y) => x + y;
 //==============================File System==============================
 //==============================Utilities For Commands=========================
 const isNotAHidden = folder => !folder[0].startsWith(".");
@@ -82,7 +83,7 @@ const removeHidden = folders => folders.filter(isNotAHidden);
 const format = folder => isAFolder(folder) ? "/" : "";
 const addSymbols = folder => "./" + folder[0] + format(folder);
 const convertFolders = folders => folders.map(addSymbols);
-const colorizeFolder = folder => folder.endsWith("/") ? blue(folder) : cyan(folder);
+const colorizeFolder = folder => isAFolder(folder) ? blue("./" + folder[0] + "/" ): cyan("./" + folder[0]);
 const colorizeFolders = folders => folders.map(colorizeFolder);
 const generatePath = (directory = currentDirectory) => {
   const parentReferenceIndex = indexOf("..", directory);
@@ -201,9 +202,27 @@ const separateFlags = commandData => commandData.reduce((filtered, currentData) 
   filtered[1].push(currentData);
   return filtered;
 }, [[],[]]);
+const increment = count => add(count, 1);
+const sizeOfFile = file => file[1].reduce((count, line) => count + line.length, 0);
+const sizeOfDirectory = directory => directory[1].reduce(increment, 0);
 //==============================Utilities For Commands=========================
 //==============================Sub Commands==============================
-// const listInLongFormat = data;
+const listInLongFormat = data => {
+  const result = [];
+
+  for (const item of data) {
+    if (isReferenceType(item[0])) continue;
+
+    const type = isAFolder(item) ? blue("directory") : cyan("file")
+    const owner = "root";
+    const size = isAFolder(item)
+      ? sizeOfDirectory(item) + " items"
+      : item[1].join("").length + " chars";
+    result.push(`${padColumn(type, 20)} ${padColumn(owner, 6)} ${padColumn(size, 10)} ${colorizeFolder(item)}`);
+  }
+
+  return result.join("\n");
+}
 //==============================Sub Commands==============================
 //==============================Commands==============================
 const pwd = () => yellow(generatePwd());
@@ -226,14 +245,15 @@ const ls = function (commandData) {
   if (!includes(".", directory)) {
     return jshError("cd", destination + " is not a directory.");
   }
-  const directoryContents = contents(directory);
-  let filtered = directoryContents;
+  let directoryContents = contents(directory);
   if (!flags.includes("a")) {
-    filtered = removeHidden(filtered);
+    directoryContents = removeHidden(directoryContents);
   }
-  const folders = convertFolders(filtered);
-  const colored = colorizeFolders(folders);
-  return colored.join("\t");
+  if (flags.includes("l")) {
+    return listInLongFormat(directoryContents);
+  }
+  directoryContents = colorizeFolders(directoryContents);
+  return directoryContents.join("\t");
 };
 const mkdir =  folders => folders.forEach(makeDir);
 const rmdir = folders => folders.forEach(removeDir);
