@@ -13,6 +13,7 @@ const displayError = (message) => red(message);
 const jshError = (cmd, msg) => red(`jsh : ${cmd} : ${msg}`);
 const maxLength = (previousLength, element) => Math.max(previousLength, element.length);
 const getMaxLengths = data => data.reduce((max, row) => row.map((element, i) => maxLength(max[i], element)), [0,0,0,0]);
+const padColumn = (data, padLength) => data.padEnd(padLength);
 //==============================Display Utilities==============================
 //==============================File System==============================
 const rootFileSystem = ["root/", []];
@@ -178,22 +179,18 @@ const fileEditor = () => {
   }
 }
 const DOCS = [
-  ["cd", "1", "Change directory", "cd <folderName>"],
-  ["ls", "1", "List files and folders in current directory", "ls <folderName>"],
-  ["pwd", "0", "Show current working directory", "pwd"],
-  ["mkdir", "n", "Create new directory", "mkdir <folderName1>  <folderName2> ..."],
-  ["rm", "n", "Remove file or directory", "rm <folderName1>  <folderName2> ..."],
-  ["touch", "n", "Create new file", "touch <fileName1>  <fileName2> ..."],
-  [
-    "cat",
-    "1 - 2",
-    "Read or write content to file - > = write and >> = append",
-    "cat <fileName> or cat > <fileName> or cat >> <fileName>",
-  ],
-  ["echo", "n", "Print text to screen", "echo <string1> <string2> ..."],
-  ["clear / cls", "0", "Clear the terminal screen", "clear / cls"],
-  ["help", "0", "Display this help page", "help"],
-  ["exit", "0", "Exit the JSH shell", "exit"],
+  ["cd", "1", "Change current directory.", "cd <folderName>"],
+  ["ls", "0 | 1", "List contents of a directory.", "ls [folderName]"],
+  ["pwd", "0", "Display the current working directory path.", "pwd"],
+  ["mkdir", "1+", "Create one or more new directories.", "mkdir <folder1> [folder2] ..."],
+  ["rmdir", "1+", "Remove one or more directories.", "rmdir <folder1> [folder2] ..."],
+  ["touch", "1+", "Create one or more empty files.", "touch <file1> [file2] ..."],
+  ["cat", "1 | 2", "View, write, or append file contents.", "cat <file> | cat > <file> | cat >> <file>"],
+  ["echo", "1+", "Print text or variables to the terminal.", "echo <text> [text] ..."],
+  ["clear", "0", "Clear the terminal display.", "clear"],
+  ["cls", "0", "Clear the terminal display (alias of clear).", "cls"],
+  ["help", "0", "Show all available commands.", "help"],
+  ["exit", "0", "Exit the JSH shell session.", "exit"],
 ];
 //==============================Utilities For Commands=========================
 //==============================Commands==============================
@@ -245,11 +242,30 @@ const cat = args => {
 }
 const help = () => {
   const lengths = getMaxLengths(DOCS);
-  const columns = DOCS.map(data => `${data[0].padEnd(lengths[0])} ${data[1].padEnd(lengths[1])} ${data[2].padEnd(lengths[2])} ${data[3].padEnd(lengths[3])}`);
   const HEADERS = ["COMMAND", "ARGS", "DESCRIPTION", "USAGE"];
-  const headerColumns = HEADERS.map((header, index) => header.padEnd(lengths[index]));
-  return headerColumns.join(" ") + `\n` + columns.join("\n"); 
-}
+  const headerColumns = HEADERS.map((header, index) =>
+    bold(custom(padColumn(header, lengths[index]), 214))
+  );
+  const columns = DOCS.map(data =>
+    data
+      .map((col, i) => (i === 0 ? cyan(padColumn(col, lengths[i] + 3)) : padColumn(col, lengths[i])))
+      .join(" ")
+  );
+
+  const table = headerColumns.join(" ") + "\n" + columns.join("\n");
+
+  const legend = `
+${yellow("Arguments Notation:")}
+  0   → No arguments
+  1   → Single argument
+  1+  → One or more arguments
+  0|1 → Optional argument
+  1|2 → One or two arguments
+`;
+
+  return `${table}\n\n${legend}`;
+};
+
 //==============================Commands==============================
 let shouldRun = true;
 let fontColorCode = 214;
