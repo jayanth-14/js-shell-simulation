@@ -211,8 +211,6 @@ const listInLongFormat = data => {
   const result = [];
 
   for (const item of data) {
-    if (isReferenceType(item[0])) continue;
-
     const type = isAFolder(item) ? blue("directory") : cyan("file")
     const owner = "root";
     const size = isAFolder(item)
@@ -240,7 +238,7 @@ const cd = (destination) => {
 const ls = function (commandData) {
   const filteredData = separateFlags(commandData);
   const destination = filteredData[1];
-  const flags = filteredData[0];
+  const flags = filteredData[0].join("");
   const directory = getDirectory(getDestination(destination));
   if (!includes(".", directory)) {
     return jshError("cd", destination + " is not a directory.");
