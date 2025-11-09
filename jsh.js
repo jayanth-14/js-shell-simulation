@@ -240,9 +240,17 @@ const cat = args => {
   const contents = file[1];
   return contents.join("\n");
 }
+const HEADERS = ["COMMAND", "ARGS", "DESCRIPTION", "USAGE"];
+
+const ARGS_NOTATION = `
+  0   → No arguments
+  1   → Single argument
+  1+  → One or more arguments
+  0|1 → Optional argument
+  1|2 → One or two arguments`
+
 const help = () => {
   const lengths = getMaxLengths(DOCS);
-  const HEADERS = ["COMMAND", "ARGS", "DESCRIPTION", "USAGE"];
   const headerColumns = HEADERS.map((header, index) =>
     bold(custom(padColumn(header, lengths[index]), 214))
   );
@@ -254,16 +262,9 @@ const help = () => {
 
   const table = headerColumns.join(" ") + "\n" + columns.join("\n");
 
-  const legend = `
-${yellow("Arguments Notation:")}
-  0   → No arguments
-  1   → Single argument
-  1+  → One or more arguments
-  0|1 → Optional argument
-  1|2 → One or two arguments
-`;
+  const notations = `${yellow("Arguments Notation:")} ${ARGS_NOTATION}`;
 
-  return `${table}\n\n${legend}`;
+  return `${table}\n\n${notations}`;
 };
 
 //==============================Commands==============================
