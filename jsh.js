@@ -212,6 +212,20 @@ const separateFlags = commandData => commandData.reduce((filtered, currentData) 
 const increment = count => add(count, 1);
 const sizeOfFile = file => file[1].reduce((count, line) => count + line.length, 0);
 const sizeOfDirectory = directory => directory[1].reduce(increment, 0);
+const isLengthLarger = (s1, s2) => s1 < s2;
+const sort = (data, maxPredicate) => {
+  const copy = data.slice();
+  for (let outerIndex = 0; outerIndex < copy.length; outerIndex++) {
+    for (let innerIndex = 0; innerIndex < copy.length; innerIndex++) {
+      if (maxPredicate(copy[innerIndex][0], copy[outerIndex][0])) {
+        const temp = copy[innerIndex];
+        copy[innerIndex] = copy[outerIndex];
+        copy[outerIndex] = temp;
+      }
+    }
+  }
+  return copy;
+}
 //==============================Utilities For Commands=========================
 //==============================Sub Commands==============================
 const listInLongFormat = data => {
@@ -249,6 +263,9 @@ const implementFlags = (data, flags) => {
   }
   if (flags.includes("r")) {
     directoryContents = directoryContents.reverse();
+  }
+  if (flags.includes("t")) {
+    directoryContents = sort(directoryContents, isLengthLarger);
   }
   return directoryContents;
 }
