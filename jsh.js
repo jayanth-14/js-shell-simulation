@@ -11,6 +11,8 @@ const customBg = (text, code) => "\x1B[48;5;" + code + "m" + text + "\x1B[0m";
 const clear = () => console.clear();
 const displayError = (message) => red(message);
 const jshError = (cmd, msg) => red(`jsh : ${cmd} : ${msg}`);
+const maxLength = (previousLength, element) => Math.max(previousLength, element.length);
+const getMaxLengths = data => data.reduce((max, row) => row.map((element, i) => maxLength(max[i], element)), [0,0,0,0]);
 //==============================Display Utilities==============================
 //==============================File System==============================
 const rootFileSystem = ["root/", []];
@@ -175,6 +177,24 @@ const fileEditor = () => {
     text.push(line);
   }
 }
+const DOCS = [
+  ["cd", "1", "Change directory", "cd <folderName>"],
+  ["ls", "1", "List files and folders in current directory", "ls <folderName>"],
+  ["pwd", "0", "Show current working directory", "pwd"],
+  ["mkdir", "n", "Create new directory", "mkdir <folderName1>  <folderName2> ..."],
+  ["rm", "n", "Remove file or directory", "rm <folderName1>  <folderName2> ..."],
+  ["touch", "n", "Create new file", "touch <fileName1>  <fileName2> ..."],
+  [
+    "cat",
+    "1 - 2",
+    "Read or write content to file - > = write and >> = append",
+    "cat <fileName> or cat > <fileName> or cat >> <fileName>",
+  ],
+  ["echo", "n", "Print text to screen", "echo <string1> <string2> ..."],
+  ["clear / cls", "0", "Clear the terminal screen", "clear / cls"],
+  ["help", "0", "Display this help page", "help"],
+  ["exit", "0", "Exit the JSH shell", "exit"],
+];
 //==============================Utilities For Commands=========================
 //==============================Commands==============================
 const pwd = () => yellow(generatePwd());
@@ -223,6 +243,13 @@ const cat = args => {
   const contents = file[1];
   return contents.join("\n");
 }
+const help = () => {
+  const lengths = getMaxLengths(DOCS);
+  const columns = DOCS.map(data => `${data[0].padEnd(lengths[0])} ${data[1].padEnd(lengths[1])} ${data[2].padEnd(lengths[2])} ${data[3].padEnd(lengths[3])}`);
+  const HEADERS = ["COMMAND", "ARGS", "DESCRIPTION", "USAGE"];
+  const headerColumns = HEADERS.map((header, index) => header.padEnd(lengths[index]));
+  return headerColumns.join(" ") + `\n` + columns.join("\n"); 
+}
 //==============================Commands==============================
 let shouldRun = true;
 let fontColorCode = 214;
@@ -255,6 +282,7 @@ const commandRegistry = [
   ["exit", exit],
   ["showFs", showFs],
   ["change", changePromptColor],
+  ["help", help]
 ]
 
 const changeBackground = function (message) {
