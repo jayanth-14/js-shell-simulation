@@ -30,7 +30,7 @@ const THEMES = [
   ["arctic", 159, 236, "\x1B[38;5;236m\x1B[0m", "\x1B[38;5;236m\x1B[0m"],
   ["minimal", 250, "", "", ""],
 ];
-const currentTheme = THEMES[0];
+let currentTheme = THEMES[0];
 //==============================Display Utilities==============================
 //==============================File System==============================
 const rootFileSystem = ["root/", []];
@@ -428,16 +428,29 @@ let shouldRun = true;
 let fontColorCode = 214;
 let backgroundColorCode = undefined;
 
-const changePromptColor = function (args) {
-  if (args[0] !== undefined) {
-    fontColorCode = args[0] === "no-color" ? 7 : parseInt(args[0]);
+const changeTheme = (args) => {
+  const themeName = args[0];
+  const newTheme = THEMES.find((x) => x[0] === themeName);
+  if (newTheme === undefined) {
+    return displayError(themeName + " is not available");
   }
-  if (args[1] !== undefined) {
-    backgroundColorCode = args[1] === "no-color"
-      ? undefined
-      : parseInt(args[1]);
-  }
-  return;
+  currentTheme = newTheme;
+};
+const showThemes = () => {
+  let themes = bold(yellow("Available themes")) + "\n\n";
+  const path = generatePath();
+  THEMES.forEach((theme) => {
+    const name = theme[0];
+    const fontColor = theme[1];
+    const backgroundColor = theme[2];
+    const leadingSymbol = theme[3];
+    const traillingSymbol = theme[4];
+    themes += " " + name.padEnd(10) + ": " + leadingSymbol +
+      bold(customBg(custom(path, fontColor), backgroundColor)) +
+      traillingSymbol;
+    themes += "\n\n";
+  });
+  return themes;
 };
 
 const commandRegistry = [
@@ -453,8 +466,9 @@ const commandRegistry = [
   ["cat", cat],
   ["exit", exit],
   ["showFs", showFs],
-  ["change", changePromptColor],
+  ["changeTheme", changeTheme],
   ["help", help],
+  ["showThemes", showThemes],
 ];
 
 const changeBackground = function (message) {
