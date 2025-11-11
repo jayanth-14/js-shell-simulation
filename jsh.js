@@ -1,5 +1,9 @@
 //==============================Display Utilities==============================
 // colors
+const debg = (x) => {
+  console.log(x);
+  return x;
+};
 const bold = (text) => "\x1B[1m" + text + "\x1B[0m";
 const red = (text) => "\x1B[31m" + text + "\x1B[0m";
 const green = (text) => "\x1B[32m" + text + "\x1B[0m";
@@ -15,8 +19,14 @@ const maxLength = (previousLength, element) =>
   Math.max(previousLength, element.length);
 const getMaxLengths = (data) =>
   data.reduce(
-    (max, row) => row.map((element, i) => maxLength(max[i], element)),
-    [0, 0, 0, 0],
+    (max, row) => {
+      const keys = Object.keys(row);
+      for (const key of keys) {
+        max[key] = maxLength(max[key], row[key]);
+      }
+      return max;
+    },
+    { name: 0, args: 0, desc: 0, usage: 0 },
   );
 const padColumn = (data, padLength) => data.padEnd(padLength);
 // theme data - [Name, fontColor, backgroundColor, leadingSymbol, trailling symbol]
@@ -217,44 +227,104 @@ const fileEditor = () => {
     text.push(line);
   }
 };
+
 const DOCS = [
-  ["cd", "1", "Change current directory.", "cd <folderName>"],
-  ["ls", "0 | 1", "List contents of a directory.", "ls [folderName]"],
-  ["pwd", "0", "Display the current working directory path.", "pwd"],
-  [
-    "mkdir",
-    "1+",
-    "Create one or more new directories.",
-    "mkdir <folder1> [folder2] ...",
-  ],
-  [
-    "rmdir",
-    "1+",
-    "Remove one or more directories.",
-    "rmdir <folder1> [folder2] ...",
-  ],
-  [
-    "touch",
-    "1+",
-    "Create one or more empty files.",
-    "touch <file1> [file2] ...",
-  ],
-  [
-    "cat",
-    "1 | 2",
-    "View, write, or append file contents.",
-    "cat <file> | cat > <file> | cat >> <file>",
-  ],
-  [
-    "echo",
-    "1+",
-    "Print text or variables to the terminal.",
-    "echo <text> [text] ...",
-  ],
-  ["clear", "0", "Clear the terminal display.", "clear"],
-  ["cls", "0", "Clear the terminal display (alias of clear).", "cls"],
-  ["help", "0", "Show all available commands.", "help"],
-  ["exit", "0", "Exit the JSH shell session.", "exit"],
+  {
+    name: "cd",
+    args: "1",
+    desc: "Change current directory.",
+    usage: "cd <folderName>",
+  },
+  {
+    name: "ls",
+    args: "0 | 1",
+    desc: "List contents of a directory",
+    usage: "ls <folderName>",
+  },
+  {
+    name: "pwd",
+    args: "0 | 1",
+    desc: "Display the current working directory path.",
+    usage: "pwd",
+  },
+  {
+    name: "mkdir",
+    args: "1+",
+    desc: "Create one or more new directories.",
+    usage: "mkdir <folder1> <folder2> ....",
+  },
+  {
+    name: "rmdir",
+    args: "1+",
+    desc: "Remove one or more existing directories.",
+    usage: "rmdir <folder1> <folder2> ...",
+  },
+  {
+    name: "touch",
+    args: "1+",
+    desc: "Create one or more new files.",
+    usage: "touch <file1> <file2> ...",
+  },
+  {
+    name: "cat",
+    args: "1 | 2",
+    desc: "View, write, or append file contents.",
+    usage: "cat <file> | cat > <file> | cat >> <file>",
+  },
+  {
+    name: "echo",
+    args: "1+",
+    desc: "Print text or variables to the terminal.",
+    usage: "echo <text> <text> ...",
+  },
+  {
+    name: "clear",
+    args: "0",
+    desc: "Clear the terminal display",
+    usage: "clear",
+  },
+  {
+    name: "cls",
+    args: "0",
+    desc: "Clear the terminal display (alias of clear).",
+    usage: "cls",
+  },
+  {
+    name: "help",
+    args: "0",
+    desc: "Show all available commands",
+    usage: "help",
+  },
+  {
+    name: "exit",
+    args: "0",
+    desc: "Exit the JSH shell session",
+    usage: "exit",
+  },
+  {
+    name: "showFs",
+    args: "0",
+    desc: "Displays the current directory in raw form.",
+    usage: "showFs",
+  },
+  {
+    name: "showThemes",
+    args: "0",
+    desc: "Displays all the themes available in JSH.",
+    usage: "showThemes",
+  },
+  {
+    name: "changeTheme",
+    args: "1",
+    desc: "Change the current theme for the shell.",
+    usage: "changeTheme <themeName>",
+  },
+  // {
+  //   name: "",
+  //   args: "",
+  //   desc: "",
+  //   usage: "",
+  // },
 ];
 const removeHyphen = (string) => string.split().splice(string.indexOf("-"), 1);
 const separateFlags = (commandData) =>
@@ -387,18 +457,15 @@ const ARGS_NOTATION = `
   1|2 → One or two arguments`;
 
 const help = () => {
-  const lengths = getMaxLengths(DOCS);
+  const lengths = Object.values(getMaxLengths(DOCS));
   const headerColumns = HEADERS.map((header, index) =>
     bold(custom(padColumn(header, lengths[index]), 214))
   );
-  const columns = DOCS.map((data) =>
-    data
-      .map((col, i) => (i === 0
-        ? cyan(padColumn(col, lengths[i] + 3))
-        : padColumn(col, lengths[i]))
-      )
-      .join(" ")
-  );
+  const columns = DOCS.map((data) => {
+    const { name, args, desc, usage } = data;
+    return name.padEnd(lengths[0]) + args.padEnd(lengths[1]) +
+      desc.padEnd(lengths[2]) + usage.padEnd(lengths[3]);
+  });
 
   const table = headerColumns.join(" ") + "\n" + columns.join("\n");
 
@@ -409,8 +476,6 @@ const help = () => {
 
 //==============================Commands==============================
 let shouldRun = true;
-let fontColorCode = 214;
-let backgroundColorCode = undefined;
 
 const changeTheme = (args) => {
   const themeName = args[0];
@@ -437,28 +502,22 @@ const showThemes = () => {
   return themes;
 };
 
-const commandRegistry = [
-  ["cd", cd],
-  ["ls", ls],
-  ["mkdir", mkdir],
-  ["rmdir", rmdir],
-  ["clear", clear],
-  ["cls", clear],
-  ["pwd", pwd],
-  ["echo", echo],
-  ["touch", touch],
-  ["cat", cat],
-  ["exit", exit],
-  ["showFs", showFs],
-  ["changeTheme", changeTheme],
-  ["help", help],
-  ["showThemes", showThemes],
-];
-
-const changeBackground = function (message) {
-  return backgroundColorCode === undefined
-    ? message
-    : customBg(message, backgroundColorCode);
+const commandRegistry = {
+  "cd": cd,
+  "ls": ls,
+  "mkdir": mkdir,
+  "rmdir": rmdir,
+  "clear": clear,
+  "cls": clear,
+  "pwd": pwd,
+  "echo": echo,
+  "touch": touch,
+  "cat": cat,
+  "exit": exit,
+  "showFs": showFs,
+  "changeTheme": changeTheme,
+  "showThemes": showThemes,
+  "help": help,
 };
 
 const userInput = function (path) {
@@ -468,17 +527,7 @@ const userInput = function (path) {
       currentTheme[2],
     ) +
     currentTheme[4];
-  const customizedMessage = changeBackground(message);
-  return prompt(customizedMessage).trim();
-};
-
-const getCommandReference = function (commandName) {
-  for (let index = 0; index < commandRegistry.length; index++) {
-    if (commandRegistry[index][0] === commandName) {
-      return commandRegistry[index][1];
-    }
-  }
-  return;
+  return prompt(message).trim();
 };
 
 const executeCommand = function (commandInfo) {
@@ -486,7 +535,7 @@ const executeCommand = function (commandInfo) {
   if (commandName === "") {
     return;
   }
-  const command = getCommandReference(commandName);
+  const command = commandRegistry[commandName];
   if (command === undefined) {
     return jshError("command not found", commandName);
   }
@@ -531,7 +580,9 @@ const start = function () {
     const commandString = userInput(pwdValue);
     const redirectionSymbol = redirectSymbol(commandString);
     const commandData = commandString.split(redirectionSymbol);
-    const output = executeCommand(commandData[0].trim().split(" "));
+    const output = executeCommand(
+      commandData[0].trim().split(" ").filter((x) => x !== ""),
+    );
     const isWriteMode = redirectionSymbol === ">";
     redirect(output, commandData[1], isWriteMode);
   }
