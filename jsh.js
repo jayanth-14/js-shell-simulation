@@ -89,27 +89,20 @@ const directoryName = (directory) => directory[0];
 
 const folderFound = (name, file) => name === directoryName(file);
 
-const indexOf = (name, directory) => {
-  const allFiles = contents(directory);
-  // console.log("name", name);
-  // console.log("name", name);
-  // console.log("allFiles", allFiles);
-  if (allFiles === undefined) {
-    return -1;
-  }
-  for (let index = 0; index < allFiles.length; index++) {
-    const file = allFiles[index];
-    if (folderFound(name, file)) {
-      return index;
-    }
-  }
-  return -1;
-};
+const findDirectory = (name, directory) =>
+  contents(directory).find((x) => x[0] === name);
 
-const includes = (folderName, parent) => indexOf(folderName, parent) !== -1;
+const findDirectoryIndex = (name, directory) =>
+  contents(directory).findIndex((x) => x[0] === name);
+
+const includes = (folderName, parent) =>
+  findDirectory(folderName, parent) !== undefined;
+
 const isAFolder = (folder) => includes(".", folder);
+
 const isReferenceType = (folderName) =>
   folderName === "." || folderName === "..";
+
 const add = (x, y) => x + y;
 //==============================File System==============================
 //==============================Utilities For Commands=========================
@@ -123,28 +116,28 @@ const colorizeFolder = (folder) =>
   isAFolder(folder) ? blue("./" + folder[0] + "/") : cyan("./" + folder[0]);
 const colorizeFolders = (folders) => folders.map(colorizeFolder);
 const generatePath = (directory = currentDirectory) => {
-  const parentReferenceIndex = indexOf("..", directory);
-  if (parentReferenceIndex === -1) {
+  const parentReference = directory[1].find((x) => x[0] === "..");
+  if (parentReference === undefined) {
     return "root";
   }
-  return generatePath(contents(directory)[parentReferenceIndex][1]) + "/" +
-    directory[0];
+  return generatePath(parentReference) + "/" + directory[0];
 };
-const getReference = (name, index, directory) =>
-  isReferenceType(name) ? directory[1][index][1] : directory[1][index];
+const getReference = (name, folder, directory) =>
+  isReferenceType(name) ? folder[1] : folder;
 
 const getDirectory = (destination) => {
   const destinations = destination[0].split("/");
   let directory = currentDirectory;
   for (const folderName of destinations) {
-    const folderIndex = indexOf(folderName, directory);
-    if (folderIndex === -1) {
+    const folder = findDirectory(folderName, directory);
+    if (folder === undefined) {
       return [];
     }
-    directory = getReference(folderName, folderIndex, directory);
+    directory = getReference(folderName, folder, directory);
   }
   return directory;
 };
+
 const validateDestination = (destination) => destination.length !== 0;
 const getDestination = (destination) =>
   validateDestination(destination) ? destination : ["."];
@@ -173,7 +166,10 @@ const removeDir = (dir) => {
   const name = path[path.length - 1];
   const parentDestination = path.slice(0, -1);
   const parentDirectory = getDirectory(parentDestination);
-  removeFromContents(parentDirectory, indexOf(name, parentDirectory));
+  removeFromContents(
+    parentDirectory,
+    findDirectoryIndex(name, parentDirectory),
+  );
 };
 const generatePwd = () => generatePath(currentDirectory);
 const createFile = (fileDestination) => {
@@ -479,12 +475,11 @@ const changeBackground = function (message) {
 
 const userInput = function (path) {
   const message = currentTheme[3] +
-    bold(
-      customBg(
-        custom("~ \u{E0A0} " + path + " ", currentTheme[1]),
-        currentTheme[2],
-      ),
-    ) + currentTheme[4];
+    customBg(
+      custom("~ \u{E0A0} " + path + " ", currentTheme[1]),
+      currentTheme[2],
+    ) +
+    currentTheme[4];
   const customizedMessage = changeBackground(message);
   return prompt(customizedMessage).trim();
 };
