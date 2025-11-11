@@ -1,21 +1,22 @@
 import { THEMES } from "./data/themes.js";
+import {
+  blue,
+  bold,
+  clear,
+  custom,
+  customBg,
+  cyan,
+  displayError,
+  green,
+  jshError,
+  yellow,
+} from "./utilities/colors.js";
 //==============================Display Utilities==============================
 // colors
 const debg = (x) => {
   console.log(x);
   return x;
 };
-const bold = (text) => "\x1B[1m" + text + "\x1B[0m";
-const red = (text) => "\x1B[31m" + text + "\x1B[0m";
-const green = (text) => "\x1B[32m" + text + "\x1B[0m";
-const yellow = (text) => "\x1B[33m" + text + "\x1B[0m";
-const blue = (text) => "\x1B[34m" + text + "\x1B[0m";
-const cyan = (text) => "\x1B[36m" + text + "\x1B[0m";
-const custom = (text, code) => "\x1B[38;5;" + code + "m" + text + "\x1B[0m";
-const customBg = (text, code) => "\x1B[48;5;" + code + "m" + text + "\x1B[0m";
-const clear = () => console.clear();
-const displayError = (message) => red(message);
-const jshError = (cmd, msg) => red(`jsh : ${cmd} : ${msg}`);
 const maxLength = (previousLength, element) =>
   Math.max(previousLength, element.length);
 const getMaxLengths = (data) =>
@@ -30,6 +31,7 @@ const getMaxLengths = (data) =>
     { name: 0, args: 0, desc: 0, usage: 0 },
   );
 const padColumn = (data, padLength) => data.padEnd(padLength);
+let currentTheme = THEMES.default;
 //==============================Display Utilities==============================
 //==============================File System==============================
 const rootFileSystem = ["root/", []];

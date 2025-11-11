@@ -1,3 +1,4 @@
+import { custom } from "../utilities/colors.js";
 export const THEMES = {
   default: {
     name: "default",
@@ -45,8 +46,8 @@ export const THEMES = {
     name: "arctic",
     fontColor: 159,
     backgroundColor: 236,
-    leadingSymbol: custom("", 24),
-    traillingSymbol: custom("", 24),
+    leadingSymbol: custom("", 236),
+    traillingSymbol: custom("", 236),
   },
   minimum: {
     name: "minimum",
@@ -56,4 +57,3 @@ export const THEMES = {
     traillingSymbol: "ß",
   },
 };
-export let currentTheme = THEMES.default;
