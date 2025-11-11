@@ -30,17 +30,75 @@ const getMaxLengths = (data) =>
   );
 const padColumn = (data, padLength) => data.padEnd(padLength);
 // theme data - [Name, fontColor, backgroundColor, leadingSymbol, trailling symbol]
-const THEMES = [
-  ["default", 214, "", "", ""],
-  ["hacker", 46, 232, "\x1B[38;5;232m\x1B[0m", "\x1B[38;5;232m\x1B[0m"],
-  ["sunset", 214, 52, "\x1B[38;5;52m\x1B[0m", "\x1B[38;5;52m\x1B[0m"],
-  ["ocean", 123, 24, "\x1B[38;5;24m\x1B[0m", "\x1B[38;5;24m\x1B[0m"],
-  ["forest", 70, "", "", ""],
-  ["neon", 207, 17, "\x1B[38;5;17m\x1B[0m", "\x1B[38;5;17m\x1B[0m"],
-  ["arctic", 159, 236, "\x1B[38;5;236m\x1B[0m", "\x1B[38;5;236m\x1B[0m"],
-  ["minimal", 250, "", "", ""],
-];
-let currentTheme = THEMES[0];
+// const THEMES = [
+//   ["default", 214, "", "", ""],
+//   ["hacker", 46, 232, "\x1B[38;5;232m\x1B[0m", "\x1B[38;5;232m\x1B[0m"],
+//   ["sunset", 214, 52, "\x1B[38;5;52m\x1B[0m", "\x1B[38;5;52m\x1B[0m"],
+//   ["ocean", 123, 24, "\x1B[38;5;24m\x1B[0m", "\x1B[38;5;24m\x1B[0m"],
+//   ["forest", 70, "", "", ""],
+//   ["neon", 207, 17, "\x1B[38;5;17m\x1B[0m", "\x1B[38;5;17m\x1B[0m"],
+//   ["arctic", 159, 236, "\x1B[38;5;236m\x1B[0m", "\x1B[38;5;236m\x1B[0m"],
+//   ["minimal", 250, "", "", ""],
+// ];
+const THEMES = {
+  default: {
+    name: "default",
+    fontColor: 214,
+    backgroundColor: "",
+    leadingSymbol: "",
+    traillingSymbol: "",
+  },
+  hacker: {
+    name: "hacker",
+    fontColor: 46,
+    backgroundColor: 232,
+    leadingSymbol: custom("", 232),
+    traillingSymbol: custom("", 232),
+  },
+  sunset: {
+    name: "sunset",
+    fontColor: 214,
+    backgroundColor: 52,
+    leadingSymbol: custom("", 52),
+    traillingSymbol: custom("", 52),
+  },
+  ocean: {
+    name: "default",
+    fontColor: 123,
+    backgroundColor: 24,
+    leadingSymbol: custom("", 24),
+    traillingSymbol: custom("", 24),
+  },
+  forest: {
+    name: "forest",
+    fontColor: 70,
+    backgroundColor: "",
+    leadingSymbol: "",
+    traillingSymbol: "",
+  },
+  neon: {
+    name: "neon",
+    fontColor: 207,
+    backgroundColor: 17,
+    leadingSymbol: custom("", 17),
+    traillingSymbol: custom("", 17),
+  },
+  arctic: {
+    name: "arctic",
+    fontColor: 159,
+    backgroundColor: 236,
+    leadingSymbol: custom("", 24),
+    traillingSymbol: custom("", 24),
+  },
+  minimum: {
+    name: "minimum",
+    fontColor: 250,
+    backgroundColor: "",
+    leadingSymbol: "",
+    traillingSymbol: "ß",
+  },
+};
+let currentTheme = THEMES.default;
 //==============================Display Utilities==============================
 //==============================File System==============================
 const rootFileSystem = ["root/", []];
@@ -479,7 +537,7 @@ let shouldRun = true;
 
 const changeTheme = (args) => {
   const themeName = args[0];
-  const newTheme = THEMES.find((x) => x[0] === themeName);
+  const newTheme = THEMES[themeName];
   if (newTheme === undefined) {
     return displayError(themeName + " is not available");
   }
@@ -488,12 +546,9 @@ const changeTheme = (args) => {
 const showThemes = () => {
   let themes = bold(yellow("Available themes")) + "\n\n";
   const path = generatePath();
-  THEMES.forEach((theme) => {
-    const name = theme[0];
-    const fontColor = theme[1];
-    const backgroundColor = theme[2];
-    const leadingSymbol = theme[3];
-    const traillingSymbol = theme[4];
+  Object.values(THEMES).forEach((theme) => {
+    const { name, fontColor, backgroundColor, leadingSymbol, traillingSymbol } =
+      theme;
     themes += " " + name.padEnd(10) + ": " + leadingSymbol +
       bold(customBg(custom(path, fontColor), backgroundColor)) +
       traillingSymbol;
@@ -521,12 +576,14 @@ const commandRegistry = {
 };
 
 const userInput = function (path) {
-  const message = currentTheme[3] +
+  const { leadingSymbol, traillingSymbol, fontColor, backgroundColor } =
+    currentTheme;
+  const message = leadingSymbol +
     customBg(
-      custom("~ \u{E0A0} " + path + " ", currentTheme[1]),
-      currentTheme[2],
+      custom("~ \u{E0A0} " + path + " ", fontColor),
+      backgroundColor,
     ) +
-    currentTheme[4];
+    traillingSymbol;
   return prompt(message).trim();
 };
 
