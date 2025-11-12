@@ -84,7 +84,7 @@ const getReference = (name, folder, directory) =>
 
 const getDirectory = (destination) => {
   const destinations = destination[0].split("/");
-  let directory = currentDirectory;
+  let directory = currentDirectory[0];
   for (const folderName of destinations) {
     const folder = findDirectory(folderName, directory);
     if (folder === undefined) {
