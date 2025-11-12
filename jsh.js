@@ -1,4 +1,4 @@
-import { THEMES } from "./data/themes.js";
+import { currentTheme, THEMES } from "./data/themes.js";
 import {
   blue,
   bold,
@@ -11,9 +11,16 @@ import {
   jshError,
   yellow,
 } from "./utilities/colors.js";
+import {
+  addInitialDirectories,
+  addToContents,
+  createDirectory,
+  currentDirectory,
+  directorySkeleton,
+} from "./utilities/files.js";
 //==============================Display Utilities==============================
 // colors
-const debg = (x) => {
+export const debg = (x) => {
   console.log(x);
   return x;
 };
@@ -31,67 +38,16 @@ const getMaxLengths = (data) =>
     { name: 0, args: 0, desc: 0, usage: 0 },
   );
 const padColumn = (data, padLength) => data.padEnd(padLength);
-let currentTheme = THEMES.default;
 //==============================Display Utilities==============================
 //==============================File System==============================
-const rootFileSystem = ["root/", []];
-let currentDirectory = rootFileSystem;
 
-const directorySkeleton = (name) => {
-  const folder = [name, []];
-  return folder;
-};
-const referenceSkeleton = (name, reference) => [name, reference];
-const createSelfReference = (directory) =>
-  directory[1].push(referenceSkeleton(".", directory));
-const addToContents = (parentDirectory, childDirectory) =>
-  parentDirectory[1].push(childDirectory);
-const removeFromContents = (parentDirectory, childDirectoryIndex) =>
-  parentDirectory[1].splice(childDirectoryIndex, 1);
-const createReferences = (directory, parent) => {
-  const selfReference = referenceSkeleton(".", directory);
-  const parentReference = referenceSkeleton("..", parent);
-  addToContents(directory, selfReference);
-  addToContents(directory, parentReference);
-};
-const addDirectory = (parentDirectory, childDirectory) => {
-  const parentReference = referenceSkeleton("..", parentDirectory);
-  addToContents(childDirectory, parentReference);
-  addToContents(parentDirectory, childDirectory);
-};
-const createDirectory = (directoryName, parent) => {
-  const directory = directorySkeleton(directoryName);
-  createReferences(directory, parent);
-  return directory;
-};
-const addInitialDirectories = () => {
-  createSelfReference(currentDirectory);
-  addToContents(currentDirectory, createDirectory("js", currentDirectory));
-  addToContents(
-    currentDirectory[1][1],
-    createDirectory("assignments", currentDirectory[1][1]),
-  );
-  addToContents(
-    currentDirectory,
-    createDirectory("Downloads", currentDirectory),
-  );
-  addToContents(currentDirectory, createDirectory("Desktop", currentDirectory));
-  addToContents(
-    currentDirectory,
-    createDirectory("Pictures", currentDirectory),
-  );
-  touch(["index.js"]);
-  append("hello world", "index.js");
-};
+const contents = (directory) => directory.contents;
 
-const contents = (directory) => directory[1];
-
-const directoryName = (directory) => directory[0];
+const directoryName = (directory) => directory.name;
 
 const folderFound = (name, file) => name === directoryName(file);
 
-const findDirectory = (name, directory) =>
-  contents(directory).find((x) => x[0] === name);
+const findDirectory = (name, directory) => directory.contents[debg(name)];
 
 const findDirectoryIndex = (name, directory) =>
   contents(directory).findIndex((x) => x[0] === name);
@@ -116,8 +72,8 @@ const convertFolders = (folders) => folders.map(addSymbols);
 const colorizeFolder = (folder) =>
   isAFolder(folder) ? blue("./" + folder[0] + "/") : cyan("./" + folder[0]);
 const colorizeFolders = (folders) => folders.map(colorizeFolder);
-const generatePath = (directory = currentDirectory) => {
-  const parentReference = directory[1].find((x) => x[0] === "..");
+const generatePath = (directory = currentDirectory[0]) => {
+  const parentReference = directory[".."];
   if (parentReference === undefined) {
     return "root";
   }
@@ -181,7 +137,7 @@ const createFile = (fileDestination) => {
   const file = directorySkeleton(name);
   addToContents(parentDirectory, file);
 };
-const append = (content, fileLocation) => {
+export const append = (content, fileLocation) => {
   const file = getDirectory([fileLocation]);
   file[1].push(content);
 };
@@ -425,7 +381,7 @@ const exit = function () {
 const showFs = () => currentDirectory;
 
 const echo = (args) => args.join(" ");
-const touch = (args) => args.forEach(createFile);
+export const touch = (args) => args.forEach(createFile);
 const cat = (args) => {
   const fileDestination = args[0];
   if (fileDestination === undefined) {
@@ -474,7 +430,7 @@ const changeTheme = (args) => {
   if (newTheme === undefined) {
     return displayError(themeName + " is not available");
   }
-  currentTheme = newTheme;
+  currentTheme[0] = newTheme;
 };
 const showThemes = () => {
   let themes = bold(yellow("Available themes")) + "\n\n";
@@ -510,7 +466,7 @@ const commandRegistry = {
 
 const userInput = function (path) {
   const { leadingSymbol, traillingSymbol, fontColor, backgroundColor } =
-    currentTheme;
+    currentTheme[0];
   const message = leadingSymbol +
     customBg(
       custom("~ \u{E0A0} " + path + " ", fontColor),

@@ -57,3 +57,4 @@ export const THEMES = {
     traillingSymbol: "ß",
   },
 };
+export const currentTheme = [THEMES.default];
