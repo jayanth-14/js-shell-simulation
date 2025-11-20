@@ -1,4 +1,5 @@
-import { currentTheme, THEMES } from "./data/themes.js";
+import { currentTheme, THEMES } from "./src/data/themes.js";
+import { DOCS } from "./src/data/help.js";
 import {
   blue,
   bold,
@@ -10,44 +11,28 @@ import {
   green,
   jshError,
   yellow,
-} from "./utilities/colors.js";
+} from "./src/utilities/colors.js";
 import {
   addInitialDirectories,
   addToContents,
   createDirectory,
   currentDirectory,
   directorySkeleton,
-} from "./utilities/files.js";
+} from "./src/utilities/files.js";
+import { getMaxLengths, padColumn } from "./src/utilities/display.js";
 //==============================Display Utilities==============================
 // colors
-export const debg = (x) => {
-  console.log(x);
-  return x;
-};
-const maxLength = (previousLength, element) =>
-  Math.max(previousLength, element.length);
-const getMaxLengths = (data) =>
-  data.reduce(
-    (max, row) => {
-      const keys = Object.keys(row);
-      for (const key of keys) {
-        max[key] = maxLength(max[key], row[key]);
-      }
-      return max;
-    },
-    { name: 0, args: 0, desc: 0, usage: 0 },
-  );
-const padColumn = (data, padLength) => data.padEnd(padLength);
+
 //==============================Display Utilities==============================
 //==============================File System==============================
 
-const contents = (directory) => directory.contents;
+const contents = (directory) => Object.values(directory.contents);
 
 const directoryName = (directory) => directory.name;
 
 const folderFound = (name, file) => name === directoryName(file);
 
-const findDirectory = (name, directory) => directory.contents[debg(name)];
+const findDirectory = (name, directory) => directory.contents[name];
 
 const findDirectoryIndex = (name, directory) =>
   contents(directory).findIndex((x) => x[0] === name);
@@ -55,7 +40,7 @@ const findDirectoryIndex = (name, directory) =>
 const includes = (folderName, parent) =>
   findDirectory(folderName, parent) !== undefined;
 
-const isAFolder = (folder) => includes(".", folder);
+const isAFolder = (folder) => folder.contents["."] === undefined;
 
 const isReferenceType = (folderName) =>
   folderName === "." || folderName === "..";
@@ -70,7 +55,7 @@ const format = (folder) => isAFolder(folder) ? "/" : "";
 const addSymbols = (folder) => "./" + folder[0] + format(folder);
 const convertFolders = (folders) => folders.map(addSymbols);
 const colorizeFolder = (folder) =>
-  isAFolder(folder) ? blue("./" + folder[0] + "/") : cyan("./" + folder[0]);
+  isAFolder(folder) ? blue("./" + folder.name + "/") : cyan("./" + folder.name);
 const colorizeFolders = (folders) => folders.map(colorizeFolder);
 const generatePath = (directory = currentDirectory[0]) => {
   const parentReference = directory[".."];
@@ -86,6 +71,7 @@ const getDirectory = (destination) => {
   const destinations = destination[0].split("/");
   let directory = currentDirectory[0];
   for (const folderName of destinations) {
+    if (folderName === ".") continue;
     const folder = findDirectory(folderName, directory);
     if (folder === undefined) {
       return [];
@@ -175,104 +161,6 @@ const fileEditor = () => {
   }
 };
 
-const DOCS = [
-  {
-    name: "cd",
-    args: "1",
-    desc: "Change current directory.",
-    usage: "cd <folderName>",
-  },
-  {
-    name: "ls",
-    args: "0 | 1",
-    desc: "List contents of a directory",
-    usage: "ls <folderName>",
-  },
-  {
-    name: "pwd",
-    args: "0 | 1",
-    desc: "Display the current working directory path.",
-    usage: "pwd",
-  },
-  {
-    name: "mkdir",
-    args: "1+",
-    desc: "Create one or more new directories.",
-    usage: "mkdir <folder1> <folder2> ....",
-  },
-  {
-    name: "rmdir",
-    args: "1+",
-    desc: "Remove one or more existing directories.",
-    usage: "rmdir <folder1> <folder2> ...",
-  },
-  {
-    name: "touch",
-    args: "1+",
-    desc: "Create one or more new files.",
-    usage: "touch <file1> <file2> ...",
-  },
-  {
-    name: "cat",
-    args: "1 | 2",
-    desc: "View, write, or append file contents.",
-    usage: "cat <file> | cat > <file> | cat >> <file>",
-  },
-  {
-    name: "echo",
-    args: "1+",
-    desc: "Print text or variables to the terminal.",
-    usage: "echo <text> <text> ...",
-  },
-  {
-    name: "clear",
-    args: "0",
-    desc: "Clear the terminal display",
-    usage: "clear",
-  },
-  {
-    name: "cls",
-    args: "0",
-    desc: "Clear the terminal display (alias of clear).",
-    usage: "cls",
-  },
-  {
-    name: "help",
-    args: "0",
-    desc: "Show all available commands",
-    usage: "help",
-  },
-  {
-    name: "exit",
-    args: "0",
-    desc: "Exit the JSH shell session",
-    usage: "exit",
-  },
-  {
-    name: "showFs",
-    args: "0",
-    desc: "Displays the current directory in raw form.",
-    usage: "showFs",
-  },
-  {
-    name: "showThemes",
-    args: "0",
-    desc: "Displays all the themes available in JSH.",
-    usage: "showThemes",
-  },
-  {
-    name: "changeTheme",
-    args: "1",
-    desc: "Change the current theme for the shell.",
-    usage: "changeTheme <themeName>",
-  },
-  // {
-  //   name: "",
-  //   args: "",
-  //   desc: "",
-  //   usage: "",
-  // },
-];
 const removeHyphen = (string) => string.split().splice(string.indexOf("-"), 1);
 const separateFlags = (commandData) =>
   commandData.reduce((filtered, currentData) => {
@@ -352,22 +240,22 @@ const ls = function (commandData) {
     return jshError("cd", destination + " is not a directory.");
   }
   let directoryContents = contents(directory);
-  directoryContents = implementFlags(directoryContents, flags);
+  // directoryContents = implementFlags(directoryContents, flags);
   const numberOfItems = flags.includes("s")
     ? `\ntotal :` + directoryContents.length
     : "";
-  if (flags.includes("l")) {
-    return listInLongFormat(directoryContents) + numberOfItems;
-  }
+  // if (flags.includes("l")) {
+  //   return listInLongFormat(directoryContents) + numberOfItems;
+  // }
   let recursiveData = "";
-  if (flags.includes("R")) {
-    filterFolder(removeHidden(directoryContents)).forEach((dir) => {
-      const currentDestination = destination.length === 0 ? "." : destination;
-      const newDestination = currentDestination + "/" + dir[0];
-      recursiveData += "\n\n" + yellow(newDestination) + "\n" +
-        ls([newDestination, "-" + flags]);
-    });
-  }
+  // if (flags.includes("R")) {
+  //   filterFolder(removeHidden(directoryContents)).forEach((dir) => {
+  //     const currentDestination = destination.length === 0 ? "." : destination;
+  //     const newDestination = currentDestination + "/" + dir[0];
+  //     recursiveData += "\n\n" + yellow(newDestination) + "\n" +
+  //       ls([newDestination, "-" + flags]);
+  //   });
+  // }
   directoryContents = colorizeFolders(directoryContents);
   return directoryContents.join("\t") + numberOfItems + recursiveData;
 };

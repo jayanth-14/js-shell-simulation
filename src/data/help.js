@@ -1,0 +1,98 @@
+export const DOCS = [
+  {
+    name: "cd",
+    args: "1",
+    desc: "Change current directory.",
+    usage: "cd <folderName>",
+  },
+  {
+    name: "ls",
+    args: "0 | 1",
+    desc: "List contents of a directory",
+    usage: "ls <folderName>",
+  },
+  {
+    name: "pwd",
+    args: "0 | 1",
+    desc: "Display the current working directory path.",
+    usage: "pwd",
+  },
+  {
+    name: "mkdir",
+    args: "1+",
+    desc: "Create one or more new directories.",
+    usage: "mkdir <folder1> <folder2> ....",
+  },
+  {
+    name: "rmdir",
+    args: "1+",
+    desc: "Remove one or more existing directories.",
+    usage: "rmdir <folder1> <folder2> ...",
+  },
+  {
+    name: "touch",
+    args: "1+",
+    desc: "Create one or more new files.",
+    usage: "touch <file1> <file2> ...",
+  },
+  {
+    name: "cat",
+    args: "1 | 2",
+    desc: "View, write, or append file contents.",
+    usage: "cat <file> | cat > <file> | cat >> <file>",
+  },
+  {
+    name: "echo",
+    args: "1+",
+    desc: "Print text or variables to the terminal.",
+    usage: "echo <text> <text> ...",
+  },
+  {
+    name: "clear",
+    args: "0",
+    desc: "Clear the terminal display",
+    usage: "clear",
+  },
+  {
+    name: "cls",
+    args: "0",
+    desc: "Clear the terminal display (alias of clear).",
+    usage: "cls",
+  },
+  {
+    name: "help",
+    args: "0",
+    desc: "Show all available commands",
+    usage: "help",
+  },
+  {
+    name: "exit",
+    args: "0",
+    desc: "Exit the JSH shell session",
+    usage: "exit",
+  },
+  {
+    name: "showFs",
+    args: "0",
+    desc: "Displays the current directory in raw form.",
+    usage: "showFs",
+  },
+  {
+    name: "showThemes",
+    args: "0",
+    desc: "Displays all the themes available in JSH.",
+    usage: "showThemes",
+  },
+  {
+    name: "changeTheme",
+    args: "1",
+    desc: "Change the current theme for the shell.",
+    usage: "changeTheme <themeName>",
+  },
+  // {
+  //   name: "",
+  //   args: "",
+  //   desc: "",
+  //   usage: "",
+  // },
+];

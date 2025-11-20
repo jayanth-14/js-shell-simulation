@@ -1,4 +1,3 @@
-import { append, debg, touch } from "../jsh.js";
 export const rootFileSystem = { name: "root", contents: {} };
 export const currentDirectory = [rootFileSystem];
 
@@ -6,7 +5,7 @@ export const directorySkeleton = (name) => {
   return { name, contents: {} };
 };
 
-const createSelfReference = (dir) => dir["."] = dir;
+const createSelfReference = (dir) => dir.contents["."] = dir;
 
 export const createDirectory = (name, parent) =>
   parent.contents[name] = directorySkeleton(name);
